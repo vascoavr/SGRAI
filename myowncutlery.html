@@ -9,15 +9,14 @@
 		</style>
 	</head>
 	<body>
-		<script src="js/three.js"></script>
-		<script src="js/OrbitControls.js"></script>
-		<script src="js/GLTFLoader.js"></script>
-		<script src="js/PointerLockControls.js"></script>
+		<script src="node_modules/three/build/three.js"></script>
         <script type= "module">
-            import { GUI } from './js/dat.gui.module.js';
+            import {GUI} from '/node_modules/three/examples/jsm/libs/dat.gui.module.js';
+            import {FirstPersonControls} from '/node_modules/three/examples/jsm/controls/FirstPersonControls.js';
+            import {OrbitControls} from '/node_modules/three/examples/jsm/controls/OrbitControls.js';
+            import {GLTFLoader} from '/node_modules/three/examples/jsm/loaders/GLTFLoader.js';
             
             var FACTORY_WALL_HEIGHT = 10;
-            let showRoofWalls = false;
             
             let renderer, camera, scene, controls;
             let groupFactoryBuilding;
@@ -36,12 +35,9 @@
                 scene.add(light);
             
                 //orbit controls
-                controls = new THREE.OrbitControls( camera, renderer.domElement );
-                //controls = new THREE.PointerLockControls( camera, renderer.domElement );
+                controls = new OrbitControls( camera, renderer.domElement );             
                 
                 createGUI();
-                
-                
                 drawFactoryBuilding();
             }
             
@@ -94,7 +90,7 @@
                 var geometryRoof = new THREE.BoxGeometry(500, 1, 250);
                 var factoryRoof = new THREE.Mesh(geometryRoof, materialRoof);
                 factoryRoof.position.set(0, 50, 0);
-                factoryRoof.visible = showRoofWalls; //roof stats invisible
+                factoryRoof.visible = false; //roof stars invisible
                 groupFactoryBuilding.add(factoryRoof);
                 
                 scene.add(groupFactoryBuilding);
