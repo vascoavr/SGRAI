@@ -10,8 +10,131 @@
 	</head>
 	<body>
 		<script src="js/three.js"></script>
-		<script>
-			// Our Javascript will go here.
+		<script src="js/OrbitControls.js"></script>
+		<script src="js/GLTFLoader.js"></script>
+		<script src="js/PointerLockControls.js"></script>
+        <script type= "module">
+            var FACTORY_WALL_HEIGHT = 10;
+            let showRoofWalls = false;
+            
+            let renderer, camera, scene, controls;
+            let groupFactoryBuilding;
+            
+            function init(){
+                renderer = new THREE.WebGLRenderer({antialias: false});
+                renderer.setSize( window.innerWidth, window.innerHeight );
+                document.body.appendChild( renderer.domElement );
+
+                camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 2000 );
+                camera.position.set( 0, 200, 500 );
+            
+                scene = new THREE.Scene();
+                
+                var light = new THREE.AmbientLight( 0xfbf7a7 );//to light 3d models
+                scene.add(light);
+            
+                //orbit controls
+                controls = new THREE.OrbitControls( camera, renderer.domElement );
+                //controls = new THREE.PointerLockControls( camera, renderer.domElement );
+                
+                drawFactoryBuilding();
+            }
+            
+            function drawFactoryBuilding() {
+                /*Factory Building*/
+                groupFactoryBuilding = new THREE.Group();
+                
+                /*Ground*/
+                var materialGround = new THREE.MeshBasicMaterial({color: 0xD4C7C7});
+                var geometryGround = new THREE.BoxGeometry(500, 1, 250);
+                var factoryGround = new THREE.Mesh(geometryGround, materialGround);
+                groupFactoryBuilding.add(factoryGround);
+
+                /*Walls*/
+                var groupFactoryWalls = new THREE.Group();
+                var materialWall = new THREE.MeshBasicMaterial({color: 0xFFFFFF})
+                var geometryLongWall = new THREE.BoxGeometry(500, FACTORY_WALL_HEIGHT, 1);
+                var geometryShortWall = new THREE.BoxGeometry(1, FACTORY_WALL_HEIGHT, 250);
+                
+                
+                /*Back Wall*/
+                var factoryWall = new THREE.Mesh(geometryLongWall, materialWall);
+                factoryWall.position.set(0, 4, -125);
+                groupFactoryWalls.add(factoryWall);
+            
+                /*Front Wall*/
+                factoryWall = new THREE.Mesh(geometryLongWall, materialWall);
+                factoryWall.position.set(0, 4, 125);
+                groupFactoryWalls.add(factoryWall);
+                
+                /*Left Wall*/
+                factoryWall = new THREE.Mesh(geometryShortWall, materialWall);
+                factoryWall.position.set(-250, 4, 0);
+                groupFactoryWalls.add(factoryWall);
+                
+                /*Right Wall*/
+                factoryWall = new THREE.Mesh(geometryShortWall, materialWall);
+                factoryWall.position.set(250, 4, 0);
+                groupFactoryWalls.add(factoryWall);
+                
+                groupFactoryBuilding.add(groupFactoryWalls);
+                
+                /*Roof*/
+                // load a texture, set wrap mode to repeat
+                var texture = new THREE.TextureLoader().load('textures/roof.jpg');
+                texture.wrapS = THREE.RepeatWrapping;
+                texture.wrapT = THREE.RepeatWrapping;
+                texture.repeat.set( 16, 16 );
+                var materialRoof = new THREE.MeshBasicMaterial({map: texture});
+                
+                var geometryRoof = new THREE.BoxGeometry(500, 1, 250);
+                var factoryRoof = new THREE.Mesh(geometryRoof, materialRoof);
+                factoryRoof.position.set(0, 50, 0);
+                factoryRoof.visible = showRoofWalls; //roof stats invisible
+                groupFactoryBuilding.add(factoryRoof);
+                
+                scene.add(groupFactoryBuilding);
+            }
+            
+            
+            function animate() {
+                requestAnimationFrame( animate );                
+                renderer.render( scene, camera );
+            }
+            
+            
+            
+            /*Event Listeners*/
+            function onWindowResize() {
+                camera.aspect = window.innerWidth/ window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+            
+            function onKeyPress(event){
+                switch (event.keyCode) {
+                    case 104: //H and h
+                    case 72: 
+                            if(!showRoofWalls) { //if walls and roof not showing
+                                groupFactoryBuilding.children[1].scale.set(1, 5, 1);
+                                groupFactoryBuilding.children[1].position.set(0, 4, 0);
+                                groupFactoryBuilding.children[2].visible = true;
+                                showRoofWalls = true;
+                            } else {
+                                groupFactoryBuilding.children[1].scale.set(1, 1, 1);
+                                groupFactoryBuilding.children[1].position.set(0, -4, 0);
+                                groupFactoryBuilding.children[2].visible = false;
+                                showRoofWalls = false;
+                            }
+                            break;
+                }
+            }
+            
+            window.addEventListener('resize', onWindowResize);
+            document.addEventListener('keypress', onKeyPress);
+            
+            init();
+            animate();
 		</script>
 	</body>
 </html>
