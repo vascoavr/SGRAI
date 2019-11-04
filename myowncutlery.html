@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYimport { GUI } from './jsm/libs/dat.gui.module.js';import { GUI } from './jsm/libs/dat.gui.module.js';PE html>
 <html>
 	<head>
 		<meta charset="utf-8">
@@ -14,6 +14,8 @@
 		<script src="js/GLTFLoader.js"></script>
 		<script src="js/PointerLockControls.js"></script>
         <script type= "module">
+            import { GUI } from './js/dat.gui.module.js';
+            
             var FACTORY_WALL_HEIGHT = 10;
             let showRoofWalls = false;
             
@@ -37,6 +39,9 @@
                 controls = new THREE.OrbitControls( camera, renderer.domElement );
                 //controls = new THREE.PointerLockControls( camera, renderer.domElement );
                 
+                createGUI();
+                
+                
                 drawFactoryBuilding();
             }
             
@@ -55,8 +60,7 @@
                 var materialWall = new THREE.MeshBasicMaterial({color: 0xFFFFFF})
                 var geometryLongWall = new THREE.BoxGeometry(500, FACTORY_WALL_HEIGHT, 1);
                 var geometryShortWall = new THREE.BoxGeometry(1, FACTORY_WALL_HEIGHT, 250);
-                
-                
+            
                 /*Back Wall*/
                 var factoryWall = new THREE.Mesh(geometryLongWall, materialWall);
                 factoryWall.position.set(0, 4, -125);
@@ -102,6 +106,31 @@
                 renderer.render( scene, camera );
             }
             
+            function createGUI() {
+                /*Widget*/
+                var settings = {
+                    'show roof': false
+                };
+                
+                var gui = new GUI();
+                
+                var folder1 = gui.addFolder("Visibility");
+                folder1.add(settings, 'show roof').onChange(showRoof);
+                folder1.open();
+            }
+            
+            /*Show and hide roof/walls*/
+            function showRoof(showRoof){
+                if(showRoof) { //if walls and roof not showing
+                    groupFactoryBuilding.children[1].scale.set(1, 5, 1);
+                    groupFactoryBuilding.children[1].position.set(0, 4, 0);
+                    groupFactoryBuilding.children[2].visible = true;
+                } else {
+                    groupFactoryBuilding.children[1].scale.set(1, 1, 1);
+                    groupFactoryBuilding.children[1].position.set(0, 0, 0);
+                    groupFactoryBuilding.children[2].visible = false;
+                }
+            }
             
             
             /*Event Listeners*/
@@ -111,27 +140,7 @@
                 renderer.setSize(window.innerWidth, window.innerHeight);
             }
             
-            function onKeyPress(event){
-                switch (event.keyCode) {
-                    case 104: //H and h
-                    case 72: 
-                            if(!showRoofWalls) { //if walls and roof not showing
-                                groupFactoryBuilding.children[1].scale.set(1, 5, 1);
-                                groupFactoryBuilding.children[1].position.set(0, 4, 0);
-                                groupFactoryBuilding.children[2].visible = true;
-                                showRoofWalls = true;
-                            } else {
-                                groupFactoryBuilding.children[1].scale.set(1, 1, 1);
-                                groupFactoryBuilding.children[1].position.set(0, -4, 0);
-                                groupFactoryBuilding.children[2].visible = false;
-                                showRoofWalls = false;
-                            }
-                            break;
-                }
-            }
-            
             window.addEventListener('resize', onWindowResize);
-            document.addEventListener('keypress', onKeyPress);
             
             init();
             animate();
