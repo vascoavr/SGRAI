@@ -10,6 +10,7 @@
 	</head>
 	<body>
 		<script src="node_modules/three/build/three.js"></script>
+		<script src=js/utility.js></script>
         <script type= "module">
             import {GUI} from '/node_modules/three/examples/jsm/libs/dat.gui.module.js';
             import {FirstPersonControls} from '/node_modules/three/examples/jsm/controls/FirstPersonControls.js';
@@ -104,10 +105,7 @@
                 var foot2 = new THREE.Mesh(geometrySupportFeet, materialSupportFeet);
                 foot2.position.set(0, -10, 10.5);
                 groupSupport.add(foot2);
-                
-                
-                
-                
+
                 return groupSupport;
             }
             
@@ -296,12 +294,6 @@
             }
             
             window.addEventListener('resize', onWindowResize);
-            
-            
-            /*Utility methods*/
-            function rad(degrees){
-                return degrees*(Math.PI/180);
-            }
             
             init();
             animate();
