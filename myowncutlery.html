@@ -48,8 +48,48 @@
                 scene.add(factoryBuilding.draw());
                 
                 /*Conveyor Belt test*/
-                var cb = new ConveyorBelt();
-                scene.add(cb.draw());
+                //var cb = new ConveyorBelt();
+                //scene.add(cb.draw());
+
+                loadFactory();
+            }
+
+            function loadFactory() {
+                let loader = new THREE.FileLoader();
+                loader.load(
+                    'factory.txt', 
+                    function (data) {
+                        drawProductionLines(data.split('\n'));
+                    },
+                    function (xhr) {
+		                console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
+	                },
+	                function (err) {
+		                console.error('An error happened');
+                    }
+                );
+            }
+
+            function drawProductionLines(productionLines) {
+                for (let i = 0; i < productionLines.length; i++) {
+                    let lineName = productionLines[i].substr(0, productionLines[i].indexOf(':'));
+                    console.log(lineName);
+
+                    let machines = productionLines[i].trim().substr(productionLines[i].indexOf(':') + 1).split(',');
+
+                    let cb = new ConveyorBelt();
+                    let line = cb.scaleConveyorBelt(machines.length);
+                    line.position.set(-100, 11, i * 50 - 75);
+                    scene.add(line);
+
+                    for (let j = 0; j < machines.length; j++) {
+                        drawMachine(machines[j]);
+                    }
+                }
+            }
+
+            function drawMachine(machine) {
+                console.log(machine);
             }
             
             function animate() {

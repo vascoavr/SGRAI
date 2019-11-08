@@ -21,7 +21,7 @@ function ConveyorBelt(){
         support2.position.set(-20, 0, 0);
         groupConveyorBelt.add(support2);
         
-        groupConveyorBelt.position.set(0, 11, 0); //move this outside of this method if needed to translate
+        //groupConveyorBelt.position.set(0, 11, 0); //move this outside of this method if needed to translate
         return groupConveyorBelt;
     }
             
@@ -148,5 +148,18 @@ function ConveyorBelt(){
         groupBelt.add(cylinder5);
         
         return groupBelt;
+    }
+
+    this.scaleConveyorBelt = function(size) {
+        let group = new THREE.Group();
+
+        for (let i = 0; i < size * 2; i++) {
+            let belt = this.draw();
+            belt.position.set(i * 24, 11, 0);
+
+            group.add(belt);
+        }
+
+        return group;
     }
 }
