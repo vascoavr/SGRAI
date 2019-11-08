@@ -19,8 +19,6 @@
             import {OrbitControls} from '/node_modules/three/examples/jsm/controls/OrbitControls.js';
             import {GLTFLoader} from '/node_modules/three/examples/jsm/loaders/GLTFLoader.js';
             
-            var FACTORY_WALL_HEIGHT = 10;
-            
             let renderer, camera, scene, controls;
             let groupFactoryBuilding;
             
@@ -46,11 +44,11 @@
                 createGUI();
                 
                 /*Factory Building*/
-                factoryBuilding = new FactoryBuilding(scene);
-                factoryBuilding.draw();
+                factoryBuilding = new FactoryBuilding().draw();
+                scene.add(factoryBuilding);
                 
+                /*Conveyor Belt test*/
                 var CB = new ConveyorBelt().draw();
-                
                 scene.add(CB);
             }
             
