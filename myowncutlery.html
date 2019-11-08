@@ -44,12 +44,12 @@
                 createGUI();
                 
                 /*Factory Building*/
-                factoryBuilding = new FactoryBuilding().draw();
-                scene.add(factoryBuilding);
+                factoryBuilding = new FactoryBuilding();
+                scene.add(factoryBuilding.draw());
                 
                 /*Conveyor Belt test*/
-                var CB = new ConveyorBelt().draw();
-                scene.add(CB);
+                var cb = new ConveyorBelt();
+                scene.add(cb.draw());
             }
             
             function animate() {

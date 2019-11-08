@@ -1,16 +1,16 @@
 function FactoryBuilding(){
     this.FACTORY_WALL_HEIGHT = 10;
-    
+    this.groupFactoryBuilding;
     
     this.draw = function() {
         /*Factory Building*/
-        var groupFactoryBuilding = new THREE.Group();
+        this.groupFactoryBuilding = new THREE.Group();
         
         /*Ground*/
         var materialBeltGround = new THREE.MeshBasicMaterial({color: 0xD4C7C7});
         var geometryGround = new THREE.BoxGeometry(500, 1, 250);
         var factoryGround = new THREE.Mesh(geometryGround, materialBeltGround);
-        groupFactoryBuilding.add(factoryGround);
+        this.groupFactoryBuilding.add(factoryGround);
 
         /*Walls*/
         var groupFactoryWalls = new THREE.Group();
@@ -38,7 +38,7 @@ function FactoryBuilding(){
         factoryWall.position.set(250, 4, 0);
         groupFactoryWalls.add(factoryWall);
         
-        groupFactoryBuilding.add(groupFactoryWalls);
+        this.groupFactoryBuilding.add(groupFactoryWalls);
         
         /*Roof*/
         // load a texture, set wrap mode to repeat
@@ -52,9 +52,9 @@ function FactoryBuilding(){
         var factoryRoof = new THREE.Mesh(geometryRoof, materialBeltRoof);
         factoryRoof.position.set(0, 50, 0);
         factoryRoof.visible = false; //roof stars invisible
-        groupFactoryBuilding.add(factoryRoof);
+        this.groupFactoryBuilding.add(factoryRoof);
         
-        return groupFactoryBuilding;
+        return this.groupFactoryBuilding;
     }
     
     this.showRoof = function(){
