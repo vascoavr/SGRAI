@@ -10,7 +10,8 @@
 	</head>
 	<body>
 		<script src="node_modules/three/build/three.js"></script>
-		<script src=js/utility.js></script>
+		<script src="js/utility.js"></script>
+		<script src="models/factory_building/factory_building.js"></script>
         <script type= "module">
             import {GUI} from '/node_modules/three/examples/jsm/libs/dat.gui.module.js';
             import {FirstPersonControls} from '/node_modules/three/examples/jsm/controls/FirstPersonControls.js';
@@ -22,6 +23,8 @@
             let renderer, camera, scene, controls;
             let groupFactoryBuilding;
             
+            var factoryBuilding;
+            
             function init(){
                 renderer = new THREE.WebGLRenderer({antialias: true});
                 renderer.setSize( window.innerWidth, window.innerHeight );
@@ -32,18 +35,20 @@
             
                 scene = new THREE.Scene();
                 
-                var light = new THREE.AmbientLight(0xffffff);//to light 3d models
-                scene.add(light);
+                //var light = new THREE.AmbientLight(0xffffff);//to light 3d models
+                //scene.add(light);
             
                 //orbit controls
                 controls = new OrbitControls( camera, renderer.domElement );             
                 
+                /*Widgets*/
                 createGUI();
-                drawFactoryBuilding();
+                
+                /*Factory Building*/
+                factoryBuilding = new FactoryBuilding(scene);
+                factoryBuilding.draw();
                 
                 scene.add(conveyorBelt());
-                
-                
             }
             
             function conveyorBelt() {
@@ -196,64 +201,7 @@
                 groupBelt.add(cylinder5);
                 
                 return groupBelt;
-            
             }
-            
-            function drawFactoryBuilding() {
-                /*Factory Building*/
-                groupFactoryBuilding = new THREE.Group();
-                
-                /*Ground*/
-                var materialBeltGround = new THREE.MeshBasicMaterial({color: 0xD4C7C7});
-                var geometryGround = new THREE.BoxGeometry(500, 1, 250);
-                var factoryGround = new THREE.Mesh(geometryGround, materialBeltGround);
-                groupFactoryBuilding.add(factoryGround);
-
-                /*Walls*/
-                var groupFactoryWalls = new THREE.Group();
-                var materialBeltWall = new THREE.MeshBasicMaterial({color: 0xFFFFFF})
-                var geometryLongWall = new THREE.BoxGeometry(500, FACTORY_WALL_HEIGHT, 1);
-                var geometryShortWall = new THREE.BoxGeometry(1, FACTORY_WALL_HEIGHT, 250);
-            
-                /*Back Wall*/
-                var factoryWall = new THREE.Mesh(geometryLongWall, materialBeltWall);
-                factoryWall.position.set(0, 4, -125);
-                groupFactoryWalls.add(factoryWall);
-            
-                /*Front Wall*/
-                factoryWall = new THREE.Mesh(geometryLongWall, materialBeltWall);
-                factoryWall.position.set(0, 4, 125);
-                groupFactoryWalls.add(factoryWall);
-                
-                /*Left Wall*/
-                factoryWall = new THREE.Mesh(geometryShortWall, materialBeltWall);
-                factoryWall.position.set(-250, 4, 0);
-                groupFactoryWalls.add(factoryWall);
-                
-                /*Right Wall*/
-                factoryWall = new THREE.Mesh(geometryShortWall, materialBeltWall);
-                factoryWall.position.set(250, 4, 0);
-                groupFactoryWalls.add(factoryWall);
-                
-                groupFactoryBuilding.add(groupFactoryWalls);
-                
-                /*Roof*/
-                // load a texture, set wrap mode to repeat
-                var texture = new THREE.TextureLoader().load('textures/roof.jpg');
-                texture.wrapS = THREE.RepeatWrapping;
-                texture.wrapT = THREE.RepeatWrapping;
-                texture.repeat.set( 16, 16 );
-                var materialBeltRoof = new THREE.MeshBasicMaterial({map: texture});
-                
-                var geometryRoof = new THREE.BoxGeometry(500, 1, 250);
-                var factoryRoof = new THREE.Mesh(geometryRoof, materialBeltRoof);
-                factoryRoof.position.set(0, 50, 0);
-                factoryRoof.visible = false; //roof stars invisible
-                groupFactoryBuilding.add(factoryRoof);
-                
-                scene.add(groupFactoryBuilding);
-            }
-            
             
             function animate() {
                 requestAnimationFrame( animate );                
@@ -276,13 +224,9 @@
             /*Show and hide roof/walls*/
             function showRoof(showRoof){
                 if(showRoof) { //if walls and roof not showing
-                    groupFactoryBuilding.children[1].scale.set(1, 5, 1);
-                    groupFactoryBuilding.children[1].position.set(0, 4, 0);
-                    groupFactoryBuilding.children[2].visible = true;
+                    factoryBuilding.showRoof();
                 } else {
-                    groupFactoryBuilding.children[1].scale.set(1, 1, 1);
-                    groupFactoryBuilding.children[1].position.set(0, 0, 0);
-                    groupFactoryBuilding.children[2].visible = false;
+                    factoryBuilding.hideRoof();
                 }
             }
             
