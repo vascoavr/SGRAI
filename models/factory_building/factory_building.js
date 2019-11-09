@@ -7,9 +7,17 @@ function FactoryBuilding(){
         this.groupFactoryBuilding = new THREE.Group();
         
         /*Ground*/
-        var materialBeltGround = new THREE.MeshBasicMaterial({color: 0xD4C7C7});
+        var texture = new THREE.TextureLoader().load('models/factory_building/textures/floor.jpg');
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(4, 2);
+
+        var materialBeltGround = new THREE.MeshBasicMaterial({map: texture});
+
         var geometryGround = new THREE.BoxGeometry(500, 1, 250);
         var factoryGround = new THREE.Mesh(geometryGround, materialBeltGround);
+        factoryGround.position.set(0, 0, 0);
+        factoryGround.visible = true;
         this.groupFactoryBuilding.add(factoryGround);
 
         /*Walls*/

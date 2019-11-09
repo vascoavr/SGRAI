@@ -155,7 +155,7 @@ function ConveyorBelt(){
 
         for (let i = 0; i < size * 2; i++) {
             let belt = this.draw();
-            belt.position.set(i * 24, 11, 0);
+            belt.position.set(i * 24, 0, 0);
 
             group.add(belt);
         }
