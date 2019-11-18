@@ -27,6 +27,11 @@
             let groupFactoryBuilding;
             
             var factoryBuilding;
+
+            var factoryDisposition = [];
+            var machinesOnScene = [];
+
+            var selectedMachine;
             
             function init(){
                 renderer = new THREE.WebGLRenderer({antialias: true});
@@ -81,6 +86,9 @@
                     line.position.set(-100, 11, 50 * i - 75);
                     scene.add(line);
 
+                    // matrix with the disposition of all the machines
+                    factoryDisposition[i] = new Array(machines.length);
+
                     for (let j = 0; j < machines.length; j++) {
                         drawMachine(machines[j].trim(), i, j);
                     }
@@ -97,13 +105,20 @@
                         path,
                         function (gltf) {
                             let machine = gltf.scene;
-                            
+   
                             machine.scale.set(10, 15, 10);
                             machine.position.set(48 * machineNumber - 110, 0, 50 * lineNumber - 102);
                             machine.rotation.set(0, rad(-90), 0);
+
                             scene.add(machine);
+                            machinesOnScene.push(machine);
+
+                            // store the machine in the matrix
+                            factoryDisposition[lineNumber][machineNumber] = machine;
                         }
                     );
+                } else {
+                    factoryDisposition[lineNumber][machineNumber] = 0;
                 }
             }
             
@@ -140,8 +155,96 @@
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
             }
+
+            function onDocumentMouseDown(event) {
+                // mouse position
+                let mouse = new THREE.Vector3((event.clientX / window.innerWidth) * 2 - 1,
+                                            -( event.clientY / window.innerHeight ) * 2 + 1,
+                                            0.5);
+
+                let raycaster =  new THREE.Raycaster();                                        
+                raycaster.setFromCamera(mouse, camera);
+                // create an array containing all machines in the scene with which the ray intersects
+                let intersects = raycaster.intersectObjects(machinesOnScene, true);
+
+                // if there is one (or more) intersections
+                if (intersects.length > 0) {
+                    // no idea how to avoid this ugly line
+                    selectedMachine = intersects[0].object.parent.parent.parent.parent.parent.uuid;
+
+                    // temporary
+                    intersects[0].object.scale.set(2, 2, 2);
+                }
+            }
+
+            function onDocumentKeyDown(event) {
+                let keyCode = event.which;
+                
+                // A or D key
+                if (keyCode === 65 || keyCode === 68) {
+                    if (selectedMachine) {
+                        var position = findIndices(selectedMachine);
+                    }
+
+                    // D key
+                    if (keyCode === 68) {
+                        if ((position.j+1) < factoryDisposition[position.i].length) {
+                            if (!factoryDisposition[position.i][position.j+1]) {
+                                // stores the machine
+                                let machine = factoryDisposition[position.i][position.j];
+
+                                // stores the machine's new position
+                                factoryDisposition[position.i][position.j+1] = factoryDisposition[position.i][position.j];
+                                // clears the machine's previous position
+                                factoryDisposition[position.i][position.j] = 0;
+
+                                // moves the machine to the right
+                                machine.translateZ(-48);
+                            }
+                        }
+                    } 
+                    // A key
+                    else {
+                        if ((position.j-1) >= 0) {
+                            if (!factoryDisposition[position.i][position.j-1]) {
+                                // stores the machine
+                                let machine = factoryDisposition[position.i][position.j];
+
+                                // stores the machine's new position
+                                factoryDisposition[position.i][position.j-1] = factoryDisposition[position.i][position.j];
+                                // clears the machine's previous position
+                                factoryDisposition[position.i][position.j] = 0;
+
+                                // moves the machine to the left
+                                machine.translateZ(48);
+                            }
+                        }
+                    }
+                }
+            }
+
+            /* return the position of the machine in the matrix */
+            function findIndices(machineUUID) {
+                let i;
+                let j;
+
+                for (i = 0; i < factoryDisposition.length; i++) {
+                    for (j = 0; j < factoryDisposition[i].length; j++) {
+                        if (factoryDisposition[i][j].uuid === selectedMachine) {
+                            return {
+                                i: i,
+                                j: j
+                            };
+                        }
+                    }
+                }
+
+                return;
+            }
             
             window.addEventListener('resize', onWindowResize);
+            document.addEventListener('mousedown', onDocumentMouseDown, false);
+            document.addEventListener("keydown", onDocumentKeyDown, false);
             
             init();
             animate();

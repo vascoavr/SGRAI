@@ -1,4 +1,4 @@
 Linha 1: M1, M3, M4
 Linha 2: M2, M4
-Linha 3: M2, M3, M1, M4, M5, M6
+Linha 3: M1, M3, M1, M4, M5, M6
 Linha 4: M3, M5, M6, M1
