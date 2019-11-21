@@ -20,6 +20,7 @@
             import {GLTFLoader} from '/node_modules/three/examples/jsm/loaders/GLTFLoader.js';
 
             import { machines } from './models/machines/machines.js';
+            import { setMachineProperties } from './models/machines/machines.js';
 
             var gltfLoader = new GLTFLoader();
             
@@ -32,14 +33,21 @@
             var machinesOnScene = [];
 
             var selectedMachine;
+
+            window.addEventListener('resize', onWindowResize);
+            document.addEventListener('mousedown', onDocumentMouseDown, false);
+            document.addEventListener("keydown", onDocumentKeyDown, false);
             
-            function init(){
-                renderer = new THREE.WebGLRenderer({antialias: true});
+            init();
+            animate();
+            
+            function init() {
+                renderer = new THREE.WebGLRenderer();
                 renderer.setSize( window.innerWidth, window.innerHeight );
                 document.body.appendChild( renderer.domElement );
 
                 camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 2000 );
-                camera.position.set( 0, 200, 500 );
+                camera.position.set( 0, 200, 250 );
             
                 scene = new THREE.Scene();
                 
@@ -55,14 +63,15 @@
                 /*Factory Building*/
                 factoryBuilding = new FactoryBuilding();
                 scene.add(factoryBuilding.draw());
-                
+
+                // loads the factory from the text file
                 loadFactory();
             }
 
             function loadFactory() {
                 let loader = new THREE.FileLoader();
                 loader.load(
-                    'factory.txt', 
+                    'factory2.txt', 
                     function (data) {
                         drawProductionLines(data.split('\n'));
                     },
@@ -97,33 +106,40 @@
 
             function drawMachine(machineType, lineNumber, machineNumber) {
                 let found = machines.find(m => m.type === machineType);
+                let machine;
 
                 if (found) {
                     const path = found.model + '/scene.gltf';
 
-                    gltfLoader.load(
-                        path,
-                        function (gltf) {
-                            let machine = gltf.scene;
-   
-                            machine.scale.set(10, 15, 10);
-                            machine.position.set(48 * machineNumber - 110, 0, 50 * lineNumber - 102);
-                            machine.rotation.set(0, rad(-90), 0);
+                        gltfLoader.load(
+                            path,
+                            function (gltf) {
+                                // checks if a machine from the same type exists
+                                let machineSameTypeExists = machinesOnScene.find(m => m.machineType === machineType);
 
-                            scene.add(machine);
-                            machinesOnScene.push(machine);
+                                if (machineSameTypeExists) {
+                                    machine = machineSameTypeExists.clone();
+                                } else {
+                                    machine = gltf.scene;
+                                }
 
-                            // store the machine in the matrix
-                            factoryDisposition[lineNumber][machineNumber] = machine;
-                        }
-                    );
+                                machine.machineType = machineType;
+                                machine = setMachineProperties(machine, machineNumber, lineNumber);
+
+                                scene.add(machine);
+                                machinesOnScene.push(machine);
+
+                                // store the machine in the matrix
+                                factoryDisposition[lineNumber][machineNumber] = machine;
+                            }
+                        );
                 } else {
                     factoryDisposition[lineNumber][machineNumber] = 0;
                 }
             }
             
             function animate() {
-                requestAnimationFrame( animate );                
+                requestAnimationFrame( animate );              
                 renderer.render( scene, camera );
             }
             
@@ -169,8 +185,18 @@
 
                 // if there is one (or more) intersections
                 if (intersects.length > 0) {
-                    // no idea how to avoid this ugly line
-                    selectedMachine = intersects[0].object.parent.parent.parent.parent.parent.uuid;
+                    selectedMachine = intersects[0].object;
+
+                    // get the UUID
+                    let flag = false;
+                    while (!flag) {
+                        if (selectedMachine.type === "Scene") {
+                            flag = true;
+                            selectedMachine = selectedMachine.uuid;
+                        } else {
+                            selectedMachine = selectedMachine.parent;
+                        }
+                    }
 
                     // temporary
                     intersects[0].object.scale.set(2, 2, 2);
@@ -189,34 +215,62 @@
                     // D key
                     if (keyCode === 68) {
                         if ((position.j+1) < factoryDisposition[position.i].length) {
-                            if (!factoryDisposition[position.i][position.j+1]) {
-                                // stores the machine
-                                let machine = factoryDisposition[position.i][position.j];
+                            // stores the machine
+                            let machine = factoryDisposition[position.i][position.j];
 
+                            // position is free
+                            if (!factoryDisposition[position.i][position.j+1]) {
                                 // stores the machine's new position
-                                factoryDisposition[position.i][position.j+1] = factoryDisposition[position.i][position.j];
+                                factoryDisposition[position.i][position.j+1] = machine;
                                 // clears the machine's previous position
                                 factoryDisposition[position.i][position.j] = 0;
 
                                 // moves the machine to the right
                                 machine.translateZ(-48);
+                            } 
+                            // position already has another machine
+                            else {
+                                // stores the second machine
+                                let machine2 = factoryDisposition[position.i][position.j+1];
+
+                                // swaps the machines' positions
+                                factoryDisposition[position.i][position.j] = machine2;
+                                factoryDisposition[position.i][position.j+1] = machine;
+
+                                // swaps the machines
+                                machine.translateZ(-48);
+                                machine2.translateZ(48);
                             }
                         }
                     } 
                     // A key
                     else {
                         if ((position.j-1) >= 0) {
-                            if (!factoryDisposition[position.i][position.j-1]) {
-                                // stores the machine
-                                let machine = factoryDisposition[position.i][position.j];
+                            // stores the machine
+                            let machine = factoryDisposition[position.i][position.j];
 
+                            // position is free
+                            if (!factoryDisposition[position.i][position.j-1]) {
                                 // stores the machine's new position
-                                factoryDisposition[position.i][position.j-1] = factoryDisposition[position.i][position.j];
+                                factoryDisposition[position.i][position.j-1] = machine;
                                 // clears the machine's previous position
                                 factoryDisposition[position.i][position.j] = 0;
 
                                 // moves the machine to the left
                                 machine.translateZ(48);
+                            }
+                            // position already has another machine
+                            else {
+                                // stores the second machine
+                                let machine2 = factoryDisposition[position.i][position.j-1];
+
+                                // swaps the machines' positions
+                                factoryDisposition[position.i][position.j] = machine2;
+                                factoryDisposition[position.i][position.j-1] = machine;
+
+                                // swaps the machines
+                                machine.translateZ(48);
+                                machine2.translateZ(-48);
                             }
                         }
                     }
@@ -241,13 +295,6 @@
 
                 return;
             }
-            
-            window.addEventListener('resize', onWindowResize);
-            document.addEventListener('mousedown', onDocumentMouseDown, false);
-            document.addEventListener("keydown", onDocumentKeyDown, false);
-            
-            init();
-            animate();
 		</script>
 	</body>
 </html>
