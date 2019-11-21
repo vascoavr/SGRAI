@@ -9,20 +9,18 @@
 		</style>
 	</head>
 	<body>
-		<script src="node_modules/three/build/three.js"></script>
+        <script src="js/three.js"></script>
+        <script src="js/GLTFLoader.js"></script>
+        <script src="js/OrbitControls.js"></script>
+        <script src="js/dat.gui.js"></script>
 		<script src="js/utility.js"></script>
 		<script src="models/factory_building/factory_building.js"></script>
         <script src="models/conveyor_belt/conveyor_belt.js"></script>
-        <script type= "module">
-            import {GUI} from '/node_modules/three/examples/jsm/libs/dat.gui.module.js';
-            import {FirstPersonControls} from '/node_modules/three/examples/jsm/controls/FirstPersonControls.js';
-            import {OrbitControls} from '/node_modules/three/examples/jsm/controls/OrbitControls.js';
-            import {GLTFLoader} from '/node_modules/three/examples/jsm/loaders/GLTFLoader.js';
-
+        <script type="module">
             import { machines } from './models/machines/machines.js';
             import { setMachineProperties } from './models/machines/machines.js';
 
-            var gltfLoader = new GLTFLoader();
+            var gltfLoader = new THREE.GLTFLoader();
             
             let renderer, camera, scene, controls;
             let groupFactoryBuilding;
@@ -47,7 +45,7 @@
                 document.body.appendChild( renderer.domElement );
 
                 camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 2000 );
-                camera.position.set( 0, 200, 250 );
+                camera.position.set( 0, 200, 400 );
             
                 scene = new THREE.Scene();
                 
@@ -55,7 +53,7 @@
                 scene.add(light);
             
                 //orbit controls
-                controls = new OrbitControls( camera, renderer.domElement );             
+                controls = new THREE.OrbitControls( camera, renderer.domElement );             
                 
                 /*Widgets*/
                 createGUI();
@@ -149,7 +147,7 @@
                     'show roof': false
                 };
                 
-                var gui = new GUI();
+                var gui = new dat.GUI();
                 
                 var folder1 = gui.addFolder("Visibility");
                 folder1.add(settings, 'show roof').onChange(showRoof);
