@@ -30,6 +30,7 @@
             var factoryDisposition = [];
             var machinesOnScene = [];
 
+            var selectedMachineUUID;
             var selectedMachine;
 
             window.addEventListener('resize', onWindowResize);
@@ -112,14 +113,7 @@
                         gltfLoader.load(
                             path,
                             function (gltf) {
-                                // checks if a machine from the same type exists
-                                let machineSameTypeExists = machinesOnScene.find(m => m.machineType === machineType);
-
-                                if (machineSameTypeExists) {
-                                    machine = machineSameTypeExists.clone();
-                                } else {
-                                    machine = gltf.scene;
-                                }
+                                machine = gltf.scene;
 
                                 machine.machineType = machineType;
                                 machine = setMachineProperties(machine, machineNumber, lineNumber);
@@ -178,26 +172,45 @@
 
                 let raycaster =  new THREE.Raycaster();                                        
                 raycaster.setFromCamera(mouse, camera);
+                
                 // create an array containing all machines in the scene with which the ray intersects
                 let intersects = raycaster.intersectObjects(machinesOnScene, true);
 
                 // if there is one (or more) intersections
                 if (intersects.length > 0) {
-                    selectedMachine = intersects[0].object;
+                    let selectedObject = intersects[0].object;
+                    let object = selectedObject;
 
-                    // get the UUID
-                    let flag = false;
-                    while (!flag) {
-                        if (selectedMachine.type === "Scene") {
-                            flag = true;
-                            selectedMachine = selectedMachine.uuid;
+                    // get the object's UUID
+                    let hasReachedUUID = false;
+
+                    while (!hasReachedUUID) {
+                        if (object.type === "Scene") {
+                            hasReachedUUID = true;
+                            selectedMachineUUID = object.uuid;
                         } else {
-                            selectedMachine = selectedMachine.parent;
+                            object = object.parent;
                         }
                     }
 
-                    // temporary
-                    intersects[0].object.scale.set(2, 2, 2);
+                    let material = intersects[0].object.material.clone();
+
+                    // if there's another machine selected, remove its highlight
+                    if (selectedMachine && selectedObject !== selectedMachine) {
+                        selectedMachine.material.emissive.setHex(0);
+                        selectedMachine = 0;
+                    }
+
+                    // highlights the selected machine
+                    if (material.emissive.getHex() === 0) {
+                        material.emissive.setHex(0xff0000);
+                        selectedMachine = intersects[0].object;
+                    } else {
+                        material.emissive.setHex(0);
+                        selectedMachineUUID = 0;
+                    }
+
+                    intersects[0].object.material = material;
                 }
             }
 
@@ -206,11 +219,10 @@
                 
                 // A or D key
                 if (keyCode === 65 || keyCode === 68) {
-                    if (selectedMachine) {
-                        var position = findIndices(selectedMachine);
-                    }
+                    if (selectedMachineUUID) {
+                        var position = findPosition(selectedMachineUUID);
 
-                    // D key
+                        // D key
                     if (keyCode === 68) {
                         if ((position.j+1) < factoryDisposition[position.i].length) {
                             // stores the machine
@@ -272,17 +284,18 @@
                             }
                         }
                     }
+                    }
                 }
             }
 
             /* return the position of the machine in the matrix */
-            function findIndices(machineUUID) {
+            function findPosition(machineUUID) {
                 let i;
                 let j;
 
                 for (i = 0; i < factoryDisposition.length; i++) {
                     for (j = 0; j < factoryDisposition[i].length; j++) {
-                        if (factoryDisposition[i][j].uuid === selectedMachine) {
+                        if (factoryDisposition[i][j].uuid === selectedMachineUUID) {
                             return {
                                 i: i,
                                 j: j
