@@ -21,7 +21,6 @@ function ConveyorBelt(){
         support2.position.set(-20, 0, 0);
         groupConveyorBelt.add(support2);
         
-        //groupConveyorBelt.position.set(0, 11, 0); //move this outside of this method if needed to translate
         return groupConveyorBelt;
     }
             
@@ -35,11 +34,13 @@ function ConveyorBelt(){
         /*Support leg 1*/
         var leg1 = new THREE.Mesh(geometrySupport, materialSupport);
         leg1.position.set(0, -5, 10.5);
+        leg1.castShadow = true;
         groupSupport.add(leg1);
         
         /*Support leg 2*/
         var leg2 = new THREE.Mesh(geometrySupport, materialSupport);
         leg2.position.set(0, -5, -10.5);
+        leg2.castShadow = true;
         groupSupport.add(leg2);
         
         /*Support middle bar*/
@@ -47,6 +48,7 @@ function ConveyorBelt(){
         var middleBar = new THREE.Mesh(geometryMiddleBar, materialSupport);
         middleBar.position.set(0, -5, 0);
         middleBar.rotation.set(rad(90), 0, 0);
+        middleBar.castShadow = true;
         groupSupport.add(middleBar);
         
         var materialSupportFeet = new THREE.MeshBasicMaterial({color: 0x3C6466, side: 2});
@@ -109,11 +111,13 @@ function ConveyorBelt(){
         var topPlane = new THREE.Mesh(geometryPlane, materialBelt);
         topPlane.rotation.set(rad(90), 0, 0);
         topPlane.position.set(-10, 2, 0);
+        topPlane.castShadow = true;
         groupBelt.add(topPlane);
         
         var bottomPlane = new THREE.Mesh(geometryPlane, materialBelt);
         bottomPlane.rotation.set(rad(90), 0, 0);
         bottomPlane.position.set(-10, -2, 0);
+        bottomPlane.castShadow = true;
         groupBelt.add(bottomPlane);
         
         /*Belt cylinders*/

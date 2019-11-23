@@ -42,17 +42,47 @@
             
             function init() {
                 renderer = new THREE.WebGLRenderer();
+                // shadows
+                renderer.shadowMap.enabled = true;
+                renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
                 renderer.setSize( window.innerWidth, window.innerHeight );
                 document.body.appendChild( renderer.domElement );
 
+                // camera
                 camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 2000 );
-                camera.position.set( 0, 200, 400 );
+                camera.position.set( 0, 350, 120 );
             
                 scene = new THREE.Scene();
                 
-                var light = new THREE.AmbientLight();//to light 3d models
-                scene.add(light);
-            
+                // lights
+                var ambientLight = new THREE.AmbientLight();
+                scene.add(ambientLight);
+
+                let pointLights = new Array(4);
+                let pointLightHelpers = new Array(4);
+
+                // point lights
+                for (let i = 0; i < pointLights.length; i++) {
+                    pointLights[i] = new THREE.PointLight(0xf8f8ff, 0.3, 0);
+                    pointLights[i].castShadow = true;
+                }
+
+                pointLights[0].position.set(-75, 200, 40);
+                pointLights[1].position.set(-75, 200, -40);
+                pointLights[2].position.set(75, 200, 40);
+                pointLights[3].position.set(75, 200, -40);
+
+                for (let light of pointLights) {
+                    scene.add(light);
+                }
+
+                // point light helpers
+                for (let i = 0; i < pointLightHelpers.length; i++) {
+                    pointLightHelpers[i] = new THREE.PointLightHelper(pointLights[i], 3);
+                    scene.add(pointLightHelpers[i]);
+                }
+       
                 //orbit controls
                 controls = new THREE.OrbitControls( camera, renderer.domElement );             
                 
@@ -117,6 +147,13 @@
 
                                 machine.machineType = machineType;
                                 machine = setMachineProperties(machine, machineNumber, lineNumber);
+                                
+                                // set castShadow on each child mesh
+                                machine.traverse(function(node) {
+                                    if (node instanceof THREE.Mesh) {
+                                        node.castShadow = true;
+                                    }
+                                });
 
                                 scene.add(machine);
                                 machinesOnScene.push(machine);
@@ -138,22 +175,22 @@
             /*Widget*/
             function createGUI() {
                 var settings = {
-                    'show roof': false
+                    'show walls': true
                 };
                 
                 var gui = new dat.GUI();
                 
                 var folder1 = gui.addFolder("Visibility");
-                folder1.add(settings, 'show roof').onChange(showRoof);
+                folder1.add(settings, 'show walls').onChange(showWalls);
                 folder1.open();
             }
             
-            /*Show and hide roof/walls*/
-            function showRoof(showRoof){
-                if(showRoof) { //if walls and roof not showing
-                    factoryBuilding.showRoof();
+            /*Show and hide walls*/
+            function showWalls(showWalls){
+                if(showWalls) { //if walls and roof not showing
+                    factoryBuilding.showWalls();
                 } else {
-                    factoryBuilding.hideRoof();
+                    factoryBuilding.hideWalls();
                 }
             }
             
@@ -195,13 +232,13 @@
 
                     let material = intersects[0].object.material.clone();
 
-                    // if there's another machine selected, remove its highlight
+                    // if there's another machine selected, remove its highambientLight
                     if (selectedMachine && selectedObject !== selectedMachine) {
                         selectedMachine.material.emissive.setHex(0);
                         selectedMachine = 0;
                     }
 
-                    // highlights the selected machine
+                    // highambientLights the selected machine
                     if (material.emissive.getHex() === 0) {
                         material.emissive.setHex(0xff0000);
                         selectedMachine = intersects[0].object;
