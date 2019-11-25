@@ -3,7 +3,7 @@ import { setMachineProperties } from './models/machines/machines.js';
 
 var gltfLoader = new THREE.GLTFLoader();
 
-let renderer, camera, scene, controls;
+let renderer, camera, scene, orbitControls, dragControls;
 let groupFactoryBuilding;
 
 var factoryBuilding;
@@ -65,7 +65,10 @@ function init() {
     }
 
     //orbit controls
-    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
+
+    //drag controls
+    dragControls = new THREE.DragControls(machinesOnScene, camera, renderer.domElement);
 
     /*Widgets*/
     createGUI();
@@ -84,6 +87,19 @@ function loadFactory() {
         'factory2.txt',
         function (data) {
             drawProductionLines(data.split('\n'));
+
+            dragControls.addEventListener('dragstart', function(event) {
+                orbitControls.enabled = false;
+            });
+
+            dragControls.addEventListener('drag', function(event) {
+                orbitControls.enabled = false;
+                event.object.position.z = 0;
+            });
+
+            dragControls.addEventListener('dragend', function(event) {
+                orbitControls.enabled = true;
+            });
         },
         function (xhr) {
             console.log((xhr.loaded / xhr.total * 100) + '% loaded');
