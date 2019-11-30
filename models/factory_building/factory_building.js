@@ -32,7 +32,7 @@ function FactoryBuilding(){
         var factoryGround = new THREE.Mesh(geometryGround, materialsGround);
 
         factoryGround.position.set(0, 0, 0);
-        factoryGround.rotation.set(rad(-90), 0, 0);
+        factoryGround.rotation.set(THREE.Math.degToRad(-90), 0, 0);
         factoryGround.visible = true;
         factoryGround.receiveShadow = true;
         
@@ -69,6 +69,7 @@ function FactoryBuilding(){
         groupFactoryWalls.add(factoryWall);
         
         groupFactoryWalls.position.set(0, 100, 0);
+        groupFactoryWalls.visible = false;
         this.groupFactoryBuilding.add(groupFactoryWalls);
         
         /*Roof*/
@@ -93,7 +94,7 @@ function FactoryBuilding(){
         var factoryRoof = new THREE.Mesh(geometryRoof, materialsRoof);
 
         factoryRoof.position.set(0, 200, 0);
-        factoryRoof.rotation.set(rad(-90), 0, 0);
+        factoryRoof.rotation.set(THREE.Math.degToRad(-90), 0, 0);
         factoryRoof.visible = false;
         factoryRoof.receiveShadow = true;
 

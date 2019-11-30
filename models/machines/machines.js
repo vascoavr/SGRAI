@@ -18,19 +18,19 @@ export function setMachineProperties(machine, x, z) {
         case 'M1':
             machine.scale.set(10, 15, 10);
             machine.position.set(48 * x - 110, 0, 50 * z - 102);
-            machine.rotation.set(0, rad(-90), 0);
+            machine.rotation.set(0, THREE.Math.degToRad(-90), 0);
 
             break;
         case 'M2':
             machine.scale.set(10, 15, 10);
             machine.position.set(48 * x - 110, 0, 50 * z - 102);
-            machine.rotation.set(0, rad(-90), 0);
+            machine.rotation.set(0, THREE.Math.degToRad(-90), 0);
 
             break;
         case 'M3':
             machine.scale.set(10, 15, 10);
             machine.position.set(48 * x - 110, 0, 50 * z - 102);
-            machine.rotation.set(0, rad(-90), 0);
+            machine.rotation.set(0, THREE.Math.degToRad(-90), 0);
 
             break;
         default:

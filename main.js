@@ -4,7 +4,6 @@ import { setMachineProperties } from './models/machines/machines.js';
 var gltfLoader = new THREE.GLTFLoader();
 
 let renderer, camera, scene, orbitControls, dragControls;
-let groupFactoryBuilding;
 
 var factoryBuilding;
 
@@ -12,11 +11,10 @@ var factoryDisposition = [];
 var machinesOnScene = [];
 
 var selectedMachineUUID;
-var selectedMachine;
 
 window.addEventListener('resize', onWindowResize);
-document.addEventListener('mousedown', onDocumentMouseDown, false);
-document.addEventListener("keydown", onDocumentKeyDown, false);
+//document.addEventListener('mousedown', onDocumentMouseDown, false);
+//document.addEventListener("keydown", onDocumentKeyDown, false);
 
 init();
 animate();
@@ -90,6 +88,19 @@ function loadFactory() {
 
             dragControls.addEventListener('dragstart', function(event) {
                 orbitControls.enabled = false;
+
+                // get the object's UUID
+                let object = event.object;
+                let hasReachedUUID = false;
+
+                while (!hasReachedUUID) {
+                    if (object.type === "Scene") {
+                        hasReachedUUID = true;
+                        selectedMachineUUID = object.uuid;
+                    } else {
+                        object = object.parent;
+                    }
+                }
             });
 
             dragControls.addEventListener('drag', function(event) {
@@ -186,7 +197,7 @@ function animate() {
 /*Widget*/
 function createGUI() {
     var settings = {
-        'show walls': true
+        'show walls': false
     };
 
     var gui = new dat.GUI();
@@ -198,7 +209,7 @@ function createGUI() {
 
 /*Show and hide walls*/
 function showWalls(showWalls) {
-    if (showWalls) { //if walls and roof not showing
+    if (showWalls) {
         factoryBuilding.showWalls();
     } else {
         factoryBuilding.hideWalls();
@@ -241,15 +252,15 @@ function onDocumentMouseDown(event) {
             }
         }
 
-        let material = intersects[0].object.material.clone();
+        /* let material = intersects[0].object.material.clone();
 
-        // if there's another machine selected, remove its highambientLight
+        // if there's another machine selected, remove its highlight
         if (selectedMachine && selectedObject !== selectedMachine) {
             selectedMachine.material.emissive.setHex(0);
             selectedMachine = 0;
         }
 
-        // highambientLights the selected machine
+        // highlights the selected machine
         if (material.emissive.getHex() === 0) {
             material.emissive.setHex(0xff0000);
             selectedMachine = intersects[0].object;
@@ -258,7 +269,7 @@ function onDocumentMouseDown(event) {
             selectedMachineUUID = 0;
         }
 
-        intersects[0].object.material = material;
+        intersects[0].object.material = material; */
     }
 }
 
@@ -343,7 +354,7 @@ function findPosition(machineUUID) {
 
     for (i = 0; i < factoryDisposition.length; i++) {
         for (j = 0; j < factoryDisposition[i].length; j++) {
-            if (factoryDisposition[i][j].uuid === selectedMachineUUID) {
+            if (factoryDisposition[i][j].uuid === machineUUID) {
                 return {
                     i: i,
                     j: j

@@ -47,7 +47,7 @@ function ConveyorBelt(){
         var geometryMiddleBar = new THREE.BoxGeometry(1, 21, 0.5);
         var middleBar = new THREE.Mesh(geometryMiddleBar, materialSupport);
         middleBar.position.set(0, -5, 0);
-        middleBar.rotation.set(rad(90), 0, 0);
+        middleBar.rotation.set(THREE.Math.degToRad(90), 0, 0);
         middleBar.castShadow = true;
         groupSupport.add(middleBar);
         
@@ -71,10 +71,10 @@ function ConveyorBelt(){
         var geometrySidePlate = new THREE.CylinderGeometry(1.5, 1.5, 0.25, 15, 1, false, 0, 3.15);
         
         var part1 = new THREE.Mesh(geometrySidePlate, materialSidePlate);
-        part1.rotation.set(rad(90), 0, 0);
+        part1.rotation.set(THREE.Math.degToRad(90), 0, 0);
         
         var part2 = new THREE.Mesh(geometrySidePlate, materialSidePlate);
-        part2.rotation.set(rad(90), rad(180), 0);
+        part2.rotation.set(THREE.Math.degToRad(90), THREE.Math.degToRad(180), 0);
         part2.position.set(-20, 0, 0);
         
         var geometrySide = new THREE.BoxGeometry(20, 3, 0.25);
@@ -97,25 +97,25 @@ function ConveyorBelt(){
         var geometryBeltCurve = new THREE.CylinderGeometry(2, 2, 20, 15, 1, true, 0, 3.15);
         
         var beltCurve1 = new THREE.Mesh(geometryBeltCurve, materialBelt);
-        beltCurve1.rotation.set(rad(90), 0, 0);
+        beltCurve1.rotation.set(THREE.Math.degToRad(90), 0, 0);
         groupBelt.add(beltCurve1);
         
         var beltCurve2 = new THREE.Mesh(geometryBeltCurve, materialBelt);
         beltCurve2.position.x = -20;
-        beltCurve2.rotation.set(rad(90),rad(180), 0);
+        beltCurve2.rotation.set(THREE.Math.degToRad(90),THREE.Math.degToRad(180), 0);
         groupBelt.add(beltCurve2);
         
         /*Belt top and bottom planes*/
         var geometryPlane = new THREE.PlaneGeometry( 20, 20, 32 )
         
         var topPlane = new THREE.Mesh(geometryPlane, materialBelt);
-        topPlane.rotation.set(rad(90), 0, 0);
+        topPlane.rotation.set(THREE.Math.degToRad(90), 0, 0);
         topPlane.position.set(-10, 2, 0);
         topPlane.castShadow = true;
         groupBelt.add(topPlane);
         
         var bottomPlane = new THREE.Mesh(geometryPlane, materialBelt);
-        bottomPlane.rotation.set(rad(90), 0, 0);
+        bottomPlane.rotation.set(THREE.Math.degToRad(90), 0, 0);
         bottomPlane.position.set(-10, -2, 0);
         bottomPlane.castShadow = true;
         groupBelt.add(bottomPlane);
@@ -128,26 +128,26 @@ function ConveyorBelt(){
         var geometryCylinders = new THREE.CylinderGeometry(1.8, 1.8, 20, 15);
         
         var cylinder1 = new THREE.Mesh(geometryCylinders, materialCylinders);
-        cylinder1.rotation.set(rad(90), 0, 0);
+        cylinder1.rotation.set(THREE.Math.degToRad(90), 0, 0);
         groupBelt.add(cylinder1);
         
         var cylinder2 = new THREE.Mesh(geometryCylinders, materialCylinders);
-        cylinder2.rotation.set(rad(90), 0, 0);
+        cylinder2.rotation.set(THREE.Math.degToRad(90), 0, 0);
         cylinder2.position.set(-20, 0, 0);
         groupBelt.add(cylinder2);
         
         var cylinder3 = new THREE.Mesh(geometryCylinders, materialCylinders);
-        cylinder3.rotation.set(rad(90), 0, 0);
+        cylinder3.rotation.set(THREE.Math.degToRad(90), 0, 0);
         cylinder3.position.set(-15, 0, 0);
         groupBelt.add(cylinder3);
         
         var cylinder4 = new THREE.Mesh(geometryCylinders, materialCylinders);
-        cylinder4.rotation.set(rad(90), 0, 0);
+        cylinder4.rotation.set(THREE.Math.degToRad(90), 0, 0);
         cylinder4.position.set(-10, 0, 0);
         groupBelt.add(cylinder4);
         
         var cylinder5 = new THREE.Mesh(geometryCylinders, materialCylinders);
-        cylinder5.rotation.set(rad(90), 0, 0);
+        cylinder5.rotation.set(THREE.Math.degToRad(90), 0, 0);
         cylinder5.position.set(-5, 0, 0);
         groupBelt.add(cylinder5);
         
