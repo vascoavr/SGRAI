@@ -88,7 +88,7 @@ function loadFactory() {
 
             dragControls.addEventListener('dragstart', function(event) {
                 orbitControls.enabled = false;
-
+                
                 // get the object's UUID
                 let object = event.object;
                 let hasReachedUUID = false;
@@ -109,6 +109,25 @@ function loadFactory() {
             });
 
             dragControls.addEventListener('dragend', function(event) {
+                let indices = findPosition(selectedMachineUUID);
+
+                // get the dragged machine's new position
+                let newPosition = new THREE.Vector3();
+                event.object.getWorldPosition(newPosition);
+
+                // update the machine's position in the matrix
+                factoryDisposition[indices.i][indices.j].position.copy(newPosition);
+                factoryDisposition[indices.i][indices.j].traverse(function (node) {
+                    if (node instanceof THREE.Mesh) {
+                        node.position.set(0, 0, 0);
+                    }
+                });
+    
+                let direction = newPosition.clone().sub(factoryDisposition[indices.i][indices.j-1].position);
+                let length = direction.length();
+                let arrowHelper = new THREE.ArrowHelper(direction.normalize(), factoryDisposition[indices.i][indices.j-1].position, length, 0xff0000);
+                scene.add(arrowHelper);
+
                 orbitControls.enabled = true;
             });
         },
