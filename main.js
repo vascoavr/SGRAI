@@ -122,11 +122,18 @@ function loadFactory() {
                         node.position.set(0, 0, 0);
                     }
                 });
-    
+
                 let direction = newPosition.clone().sub(factoryDisposition[indices.i][indices.j-1].position);
                 let length = direction.length();
                 let arrowHelper = new THREE.ArrowHelper(direction.normalize(), factoryDisposition[indices.i][indices.j-1].position, length, 0xff0000);
                 scene.add(arrowHelper);
+
+                // determine the rotation angle
+                let angle = Math.atan2(direction.z, direction.x);
+
+                let cb = new ConveyorBelt();
+                let belt = cb.drawBelt(factoryDisposition[indices.i][indices.j-1].position, length, angle);
+                scene.add(belt);
 
                 orbitControls.enabled = true;
             });

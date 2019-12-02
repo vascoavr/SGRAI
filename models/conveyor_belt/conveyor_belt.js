@@ -166,4 +166,15 @@ function ConveyorBelt(){
 
         return group;
     }
+
+    this.drawBelt = function(position, length, angle) {
+        let belt = this.draw();
+        let scale = length / 24;
+        
+        belt.position.set(position.x, 11, position.z);
+        belt.rotation.set(0, THREE.Math.degToRad(180) - angle, 0);
+        belt.scale.set(scale, 1, 1);
+
+        return belt;
+    }
 }
