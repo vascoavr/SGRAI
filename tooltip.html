@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Context menu for three js</title>
+    <style>
+        * {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 1rem;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+        }
+        #clickable {
+            padding: 3rem;
+            margin: 0 auto;
+            width: 70%;
+            border: 4px solid black;
+        }
+
+        #context-menu {
+            position: fixed;
+            display: none;
+        }
+        .menu-items {
+            list-style-type: none;
+            display: inline-block;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            background-color: rgb(243, 243, 243);
+            border: 1px solid rgb(134, 134, 134);
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        .menu-item {
+            padding: 0.2rem 1rem;
+            line-height: 2rem;
+            height: 2rem;
+        }
+
+        .menu-item:hover {
+            background-color: rgb(235, 235, 235);
+        }
+
+        .divider {
+            margin: 0;
+            padding: 0 0.5rem;
+            border-bottom: 1px solid rgb(187, 187, 187)
+        }
+
+        .machine-input-select {
+            cursor: pointer;
+            width: 100%;
+            height: 1rem;
+            line-height: 1rem;
+            vertical-align: middle;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            border: none;
+            background-color: inherit;
+            background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%3E%3Ctitle%3Edown-arrow%3C%2Ftitle%3E%3Cg%20fill%3D%22%23000000%22%3E%3Cpath%20d%3D%22M10.293%2C3.293%2C6%2C7.586%2C1.707%2C3.293A1%2C1%2C0%2C0%2C0%2C.293%2C4.707l5%2C5a1%2C1%2C0%2C0%2C0%2C1.414%2C0l5-5a1%2C1%2C0%2C1%2C0-1.414-1.414Z%22%20fill%3D%22%23000000%22%3E%3C%2Fpath%3E%3C%2Fg%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right center;
+            font-weight: bold;
+        }
+
+        .machine-select:after {
+            content: "asdasdas";
+        }
+    </style>
+</head>
+
+<body>
+    <span>Right click for the custom context menu.</span>
+    <div id="context-menu">
+        <ul class="menu-items">
+            <li class="menu-item">
+                <select class="machine-input-select" id="select-machine">
+                    <option value="ER">No machine types</option>
+                </select>
+            </li>
+            <li class="divider"></li>
+            <li class="menu-item" id="new-machine">
+                <span>New</span>
+            </li>
+            <li class="divider"></li>
+            <li class="menu-item" id="remove-machine">
+                <span>Remove</span>
+            </li>
+        </ul>
+    </div>
+
+    <script>
+        const machineTypes = ['M1', 'M2', 'M3', 'M4', 'M5']
+        let currentMachineType = 2 // index from the array
+
+        let isOpened = false
+        let menu;
+        let newMachineButton
+        let removeMachineButton
+        let MachineTypeSelect
+
+        document.addEventListener('DOMContentLoaded', () => {
+            menu = document.getElementById('context-menu')
+            newMachineButton = document.getElementById('new-machine')
+            removeMachineButton = document.getElementById('remove-machine')
+            MachineTypeSelect = document.getElementById('select-machine')
+            
+            MachineTypeSelect.options.length = 0
+            for (let i = 0; i < machineTypes.length; i++) {
+                const type = machineTypes[i];
+                MachineTypeSelect.options[i] = new Option(machineTypes[i], machineTypes[i])
+            }
+
+            let range = document.body
+            range.addEventListener('contextmenu', showContextMenu)
+            range.addEventListener('dblclick', hideContextMenu)
+
+            newMachineButton.addEventListener('click', addNewMachine)
+            removeMachineButton.addEventListener('click', removeMachine)
+            MachineTypeSelect.addEventListener('click', selectMachineType)
+
+        })
+
+        const showContextMenu = (e) => {
+            e.preventDefault()
+            if (!isOpened) {
+                menu.style.top = `${e.clientY}px`
+                menu.style.left = `${e.clientX}px`
+                menu.style.display = "block"
+                isOpened = true
+            }
+            else {
+                hideContextMenu()
+            }
+        }
+        
+        const hideContextMenu = (e) => {
+            menu.style.display = "none"
+            isOpened = false
+        }
+
+        const addNewMachine = () => {
+            hideContextMenu()
+
+            // add machine
+            console.log('machine added')
+        }
+
+        const removeMachine = () => {
+            hideContextMenu()
+
+            // remove machine
+            console.log('machine removed')
+        }
+
+        const selectMachineType = () => {
+            MachineTypeSelect.addEventListener('change', () => {
+                hideContextMenu()
+                currentMachineType = MachineTypeSelect.selectedIndex
+
+                // select machine type
+                console.log('machine type changed to ' + machineTypes[currentMachineType])
+            })
+        }
+    </script>
+</body>
+
+</html>
