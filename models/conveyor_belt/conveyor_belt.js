@@ -154,24 +154,11 @@ function ConveyorBelt(){
         return groupBelt;
     }
 
-    this.scaleConveyorBelt = function(size) {
-        let group = new THREE.Group();
-
-        for (let i = 0; i < size * 2; i++) {
-            let belt = this.draw();
-            belt.position.set(i * 24, 0, 0);
-
-            group.add(belt);
-        }
-
-        return group;
-    }
-
     this.drawBelt = function(position, length, angle) {
         let belt = this.draw();
-        let scale = length / 24;
+        let scale = length / 32;
         
-        belt.position.set(position.x, 11, position.z);
+        belt.position.set(position.x-10, 11, position.z);
         belt.rotation.set(0, THREE.Math.degToRad(180) - angle, 0);
         belt.scale.set(scale, 1, 1);
 

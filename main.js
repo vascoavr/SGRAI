@@ -9,6 +9,7 @@ var factoryBuilding;
 
 var factoryDisposition = [];
 var machinesOnScene = [];
+var tablesOnScene = [];
 
 var selectedMachineUUID;
 
@@ -114,6 +115,7 @@ function loadFactory() {
                 // get the dragged machine's new position
                 let newPosition = new THREE.Vector3();
                 event.object.getWorldPosition(newPosition);
+                newPosition.y = 0;
 
                 // update the machine's position in the matrix
                 factoryDisposition[indices.i][indices.j].position.copy(newPosition);
@@ -123,17 +125,15 @@ function loadFactory() {
                     }
                 });
 
-                let direction = newPosition.clone().sub(factoryDisposition[indices.i][indices.j-1].position);
-                let length = direction.length();
-                let arrowHelper = new THREE.ArrowHelper(direction.normalize(), factoryDisposition[indices.i][indices.j-1].position, length, 0xff0000);
-                scene.add(arrowHelper);
+                // dragged machine has another machine connected to it ([i][j-1])
+                if (factoryDisposition[indices.i][indices.j-1]) {
+                    moveTable(factoryDisposition[indices.i][indices.j-1], factoryDisposition[indices.i][indices.j]);
+                }
 
-                // determine the rotation angle
-                let angle = Math.atan2(direction.z, direction.x);
-
-                let cb = new ConveyorBelt();
-                let belt = cb.drawBelt(factoryDisposition[indices.i][indices.j-1].position, length, angle);
-                scene.add(belt);
+                // dragged machine connects to another machine ([i][j+1])
+                if (factoryDisposition[indices.i][indices.j+1]) {
+                    moveTable(factoryDisposition[indices.i][indices.j], factoryDisposition[indices.i][indices.j+1]);
+                }
 
                 orbitControls.enabled = true;
             });
@@ -165,12 +165,6 @@ function drawProductionLines(productionLines) {
     for (let i = 0; i < productionLines.length; i++) {
         let lineName = productionLines[i].substr(0, productionLines[i].indexOf(':'));
         let machines = productionLines[i].trim().substr(productionLines[i].indexOf(':') + 1).split(',');
-
-        let cb = new ConveyorBelt();
-        let line = cb.scaleConveyorBelt(machines.length);
-
-        line.position.set(-100, 11, 50 * i - 75);
-        scene.add(line);
 
         // matrix with the disposition of all the machines
         factoryDisposition[i] = new Array(machines.length);
@@ -208,10 +202,57 @@ function drawMachine(machineType, lineNumber, machineNumber) {
 
                 // store the machine in the matrix
                 factoryDisposition[lineNumber][machineNumber] = machine;
+
+                // draw the tables connecting the machines
+                if (factoryDisposition[lineNumber][machineNumber-1]) {
+                    drawTable(factoryDisposition[lineNumber][machineNumber-1], machine);
+                }
+
+                if (factoryDisposition[lineNumber][machineNumber+1]) {
+                    drawTable(machine, factoryDisposition[lineNumber][machineNumber+1]);
+                }
             }
         );
     } else {
         factoryDisposition[lineNumber][machineNumber] = 0;
+    }
+}
+
+function drawTable(machine1, machine2) {
+    let direction = machine1.position.clone().sub(machine2.position);
+    let length = direction.length();
+
+    // determine the rotation angle
+    let angle = Math.atan2(direction.z, direction.x);
+
+    let cb = new ConveyorBelt();
+    let table = cb.drawBelt(machine2.position, length, angle);
+    
+    table.from = machine1;
+    table.to = machine2;
+
+    scene.add(table);
+    tablesOnScene.push(table);
+}
+
+/* moves the table connecting 2 machines after dragging one of them */
+function moveTable(from, to) {
+    let direction = from.position.clone().sub(to.position);
+    let length = direction.length();
+    let scale = length / 26;
+
+    // determine the rotation angle
+    let angle = Math.atan2(direction.z, direction.x);
+
+    // update the table's position, rotation and scale
+    for (let table of tablesOnScene) {
+        if (table.from.uuid === from.uuid && table.to.uuid === to.uuid) {
+            table.position.set(to.position.x-(scale/10), 11, to.position.z);
+            table.rotation.set(0, THREE.Math.degToRad(180) - angle, 0);
+            table.scale.set(scale, 1, 1);
+
+            break;
+        }
     }
 }
 
