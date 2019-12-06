@@ -318,6 +318,7 @@ function onDocumentMouseDown(event) {
                 object = object.parent;
             }
         }
+        console.log('touched')
 
         /* let material = intersects[0].object.material.clone();
 
