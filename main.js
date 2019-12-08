@@ -17,8 +17,8 @@ var tablesOnScene = [];
 var selectedMachineUUID;
 
 window.addEventListener('resize', onWindowResize);
-window.addEventListener( 'mousemove', onMouseMove, false );        
-document.addEventListener('mousedown', onDocumentMouseDown, false);
+window.addEventListener('mousemove', onMouseMove, false);
+document.addEventListener('contextmenu', onContextMenu, false);
 //document.addEventListener("keydown", onDocumentKeyDown, false);
 
 init();
@@ -302,21 +302,22 @@ function onMouseMove(event) {
 }
 
 
-function onDocumentMouseDown(event) {
+function onContextMenu(event) {
     raycaster.setFromCamera(mouse, camera)
-        
+
     // maybe the problem is in this, or how it's detecting the objects
-    var intersects = raycaster.intersectObjects(scene.children)
+    var intersects = raycaster.intersectObjects(machinesOnScene, true)
 
     // only this working
     console.log('this is for every click')
 
     if (intersects.length > 0) {
-        // this is never working
-        // I need this to bring the context menu up in the correct position
+        // dragControls.enabled = false
         console.log('this is for only the machines')
+        showContextMenu(event)
     }
 
+    // dragControls.enabled = true
 }
 
 function onDocumentKeyDown(event) {
@@ -411,3 +412,5 @@ function findPosition(machineUUID) {
 
     return;
 }
+
+// mouse functions

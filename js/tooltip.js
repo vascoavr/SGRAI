@@ -7,6 +7,7 @@ let newMachineButton
 let removeMachineButton
 let MachineTypeSelect
 
+
 document.addEventListener('DOMContentLoaded', () => {
     menu = document.getElementById('context-menu')
     newMachineButton = document.getElementById('new-machine')
@@ -20,7 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     let range = document.body
-    range.addEventListener('contextmenu', showContextMenu)
+    // now it's only working on the machines
+    // range.addEventListener('contextmenu', showContextMenu)
     range.addEventListener('dblclick', hideContextMenu)
 
     newMachineButton.addEventListener('click', addNewMachine)
