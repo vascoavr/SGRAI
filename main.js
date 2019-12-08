@@ -5,6 +5,9 @@ var gltfLoader = new THREE.GLTFLoader();
 
 let renderer, camera, scene, orbitControls, dragControls;
 
+var mouse = new THREE.Vector2(); // create once
+var raycaster = new THREE.Raycaster(); // create once
+
 var factoryBuilding;
 
 var factoryDisposition = [];
@@ -14,7 +17,8 @@ var tablesOnScene = [];
 var selectedMachineUUID;
 
 window.addEventListener('resize', onWindowResize);
-//document.addEventListener('mousedown', onDocumentMouseDown, false);
+window.addEventListener( 'mousemove', onMouseMove, false );        
+document.addEventListener('mousedown', onDocumentMouseDown, false);
 //document.addEventListener("keydown", onDocumentKeyDown, false);
 
 init();
@@ -87,9 +91,9 @@ function loadFactory() {
         function (data) {
             drawProductionLines(data.split('\n'));
 
-            dragControls.addEventListener('dragstart', function(event) {
+            dragControls.addEventListener('dragstart', function (event) {
                 orbitControls.enabled = false;
-                
+
                 // get the object's UUID
                 let object = event.object;
                 let hasReachedUUID = false;
@@ -104,12 +108,12 @@ function loadFactory() {
                 }
             });
 
-            dragControls.addEventListener('drag', function(event) {
+            dragControls.addEventListener('drag', function (event) {
                 orbitControls.enabled = false;
                 event.object.position.z = 0;
             });
 
-            dragControls.addEventListener('dragend', function(event) {
+            dragControls.addEventListener('dragend', function (event) {
                 let indices = findPosition(selectedMachineUUID);
 
                 // get the dragged machine's new position
@@ -126,13 +130,13 @@ function loadFactory() {
                 });
 
                 // dragged machine has another machine connected to it ([i][j-1])
-                if (factoryDisposition[indices.i][indices.j-1]) {
-                    moveTable(factoryDisposition[indices.i][indices.j-1], factoryDisposition[indices.i][indices.j]);
+                if (factoryDisposition[indices.i][indices.j - 1]) {
+                    moveTable(factoryDisposition[indices.i][indices.j - 1], factoryDisposition[indices.i][indices.j]);
                 }
 
                 // dragged machine connects to another machine ([i][j+1])
-                if (factoryDisposition[indices.i][indices.j+1]) {
-                    moveTable(factoryDisposition[indices.i][indices.j], factoryDisposition[indices.i][indices.j+1]);
+                if (factoryDisposition[indices.i][indices.j + 1]) {
+                    moveTable(factoryDisposition[indices.i][indices.j], factoryDisposition[indices.i][indices.j + 1]);
                 }
 
                 orbitControls.enabled = true;
@@ -204,12 +208,12 @@ function drawMachine(machineType, lineNumber, machineNumber) {
                 factoryDisposition[lineNumber][machineNumber] = machine;
 
                 // draw the tables connecting the machines
-                if (factoryDisposition[lineNumber][machineNumber-1]) {
-                    drawTable(factoryDisposition[lineNumber][machineNumber-1], machine);
+                if (factoryDisposition[lineNumber][machineNumber - 1]) {
+                    drawTable(factoryDisposition[lineNumber][machineNumber - 1], machine);
                 }
 
-                if (factoryDisposition[lineNumber][machineNumber+1]) {
-                    drawTable(machine, factoryDisposition[lineNumber][machineNumber+1]);
+                if (factoryDisposition[lineNumber][machineNumber + 1]) {
+                    drawTable(machine, factoryDisposition[lineNumber][machineNumber + 1]);
                 }
             }
         );
@@ -227,7 +231,7 @@ function drawTable(machine1, machine2) {
 
     let cb = new ConveyorBelt();
     let table = cb.drawBelt(machine2.position, length, angle);
-    
+
     table.from = machine1;
     table.to = machine2;
 
@@ -247,7 +251,7 @@ function moveTable(from, to) {
     // update the table's position, rotation and scale
     for (let table of tablesOnScene) {
         if (table.from.uuid === from.uuid && table.to.uuid === to.uuid) {
-            table.position.set(to.position.x-(scale/10), 11, to.position.z);
+            table.position.set(to.position.x - (scale / 10), 11, to.position.z);
             table.rotation.set(0, THREE.Math.degToRad(180) - angle, 0);
             table.scale.set(scale, 1, 1);
 
@@ -290,55 +294,28 @@ function onWindowResize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
+function onMouseMove(event) {
+    // calculate mouse position in normalized device coordinates 
+    // (-1 to +1) for both components 
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+}
+
+
 function onDocumentMouseDown(event) {
-    // mouse position
-    let mouse = new THREE.Vector3((event.clientX / window.innerWidth) * 2 - 1,
-        -(event.clientY / window.innerHeight) * 2 + 1,
-        0.5);
+    raycaster.setFromCamera(mouse, camera)
+        
+    // maybe the problem is in this, or how it's detecting the objects
+    var intersects = raycaster.intersectObjects(scene.children)
 
-    let raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(mouse, camera);
+    // only this working
+    console.log('this is for every click')
 
-    // create an array containing all machines in the scene with which the ray intersects
-    let intersects = raycaster.intersectObjects(machinesOnScene, true);
-
-    // if there is one (or more) intersections
     if (intersects.length > 0) {
-        let selectedObject = intersects[0].object;
-        let object = selectedObject;
-
-        // get the object's UUID
-        let hasReachedUUID = false;
-
-        while (!hasReachedUUID) {
-            if (object.type === "Scene") {
-                hasReachedUUID = true;
-                selectedMachineUUID = object.uuid;
-            } else {
-                object = object.parent;
-            }
-        }
-        console.log('touched')
-
-        /* let material = intersects[0].object.material.clone();
-
-        // if there's another machine selected, remove its highlight
-        if (selectedMachine && selectedObject !== selectedMachine) {
-            selectedMachine.material.emissive.setHex(0);
-            selectedMachine = 0;
-        }
-
-        // highlights the selected machine
-        if (material.emissive.getHex() === 0) {
-            material.emissive.setHex(0xff0000);
-            selectedMachine = intersects[0].object;
-        } else {
-            material.emissive.setHex(0);
-            selectedMachineUUID = 0;
-        }
-
-        intersects[0].object.material = material; */
+        // this is never working
+        console.log('this is for only the machines')
     }
+
 }
 
 function onDocumentKeyDown(event) {
