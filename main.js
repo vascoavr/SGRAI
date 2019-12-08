@@ -334,6 +334,9 @@ function onContextMenu(event) {
 
         console.log(selectedMachine)
     }
+    else {
+        hideContextMenu(event)
+    }
     dragControls.enabled = false 
 }
 
