@@ -5,6 +5,7 @@
     font-size: 0.9rem;
 }
 .menu-items {
+    min-width: 5rem;
     list-style-type: none;
     display: inline-block;
     box-sizing: border-box;

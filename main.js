@@ -304,21 +304,39 @@ function onMouseMove(event) {
 
 function onContextMenu(event) {
     raycaster.setFromCamera(mouse, camera)
-
-    // maybe the problem is in this, or how it's detecting the objects
     var intersects = raycaster.intersectObjects(machinesOnScene, true)
-
-    // only this working
-    console.log('this is for every click')
-
+    dragControls.enabled = false
+    
     if (intersects.length > 0) {
-        // dragControls.enabled = false
         console.log('this is for only the machines')
         showContextMenu(event)
-    }
 
-    // dragControls.enabled = true
+        // get the object's UUID
+        let object = intersects[0].object;
+        let hasReachedUUID = false;
+
+        while (!hasReachedUUID) {
+            if (object.type === "Scene") {
+                hasReachedUUID = true;
+                selectedMachineUUID = object.uuid;
+            } else {
+                object = object.parent;
+            }
+        }
+        let position = findPosition(selectedMachineUUID)
+        let selectedMachine = factoryDisposition[position.i][position.j]
+
+        let selectedMachineType = selectedMachine.machineType
+        
+        setMachineType(selectedMachineType)
+        
+        selectedMachineType = selectMachineType()
+
+        console.log(selectedMachine)
+    }
+    dragControls.enabled = false 
 }
+
 
 function onDocumentKeyDown(event) {
     let keyCode = event.which;

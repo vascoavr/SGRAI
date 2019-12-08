@@ -1,4 +1,4 @@
-const machineTypes = ['M1', 'M2', 'M3', 'M4', 'M5']
+const machineTypes = ['M1', 'M2', 'M3']
 let currentMachineType = 2 // index from the array
 
 let isOpened = false
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // range.addEventListener('contextmenu', showContextMenu)
     range.addEventListener('dblclick', hideContextMenu)
 
-    newMachineButton.addEventListener('click', addNewMachine)
+    // newMachineButton.addEventListener('click', addNewMachine)
     removeMachineButton.addEventListener('click', removeMachine)
     MachineTypeSelect.addEventListener('click', selectMachineType)
 
@@ -49,26 +49,36 @@ const hideContextMenu = (e) => {
     isOpened = false
 }
 
-const addNewMachine = () => {
-    hideContextMenu()
-
-    // add machine
-    console.log('machine added')
-}
 
 const removeMachine = () => {
     hideContextMenu()
-
-    // remove machine
     console.log('machine removed')
 }
+
+// const addNewMachine = () => {
+//     hideContextMenu()
+
+//     // add machine
+//     console.log('machine added')
+// }
+
+
+const setMachineType = (type) => {
+    currentMachineType = type
+    // console.log(currentMachineType)
+}
+
 
 const selectMachineType = () => {
     MachineTypeSelect.addEventListener('change', () => {
         hideContextMenu()
         currentMachineType = MachineTypeSelect.selectedIndex
 
+        // let selectedMachine = factoryDisposition[position.i][position.j]
+
+        // selectMachine.machineType = currentMachineType
         // select machine type
         console.log('machine type changed to ' + machineTypes[currentMachineType])
     })
+    return currentMachineType
 }
