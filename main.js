@@ -313,6 +313,7 @@ function onDocumentMouseDown(event) {
 
     if (intersects.length > 0) {
         // this is never working
+        // I need this to bring the context menu up in the correct position
         console.log('this is for only the machines')
     }
 
