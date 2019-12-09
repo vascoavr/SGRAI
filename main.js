@@ -1,12 +1,15 @@
-import { machines } from './models/machines/machines.js';
-import { setMachineProperties } from './models/machines/machines.js';
+import { machines } from './models/machines/machines.js'
+import { setMachineProperties } from './models/machines/machines.js'
+import { ContextMenu } from './js/contextMenu.js'
 
 var gltfLoader = new THREE.GLTFLoader();
 
 let renderer, camera, scene, orbitControls, dragControls;
 
-var mouse = new THREE.Vector2(); // create once
-var raycaster = new THREE.Raycaster(); // create once
+var mouse = new THREE.Vector2()
+var raycaster = new THREE.Raycaster()
+
+var contextMenu = new ContextMenu()
 
 var factoryBuilding;
 
@@ -302,6 +305,16 @@ function onMouseMove(event) {
 }
 
 
+contextMenu.setRemoveFunction(() => {
+    console.log('when clicks on remove')
+})
+
+contextMenu.setSelectFunction(() => {
+    console.log('when selects machine type')
+    // for current selected:
+    // contextMenu.currentSelectedMachineType()
+})
+
 function onContextMenu(event) {
     raycaster.setFromCamera(mouse, camera)
     var intersects = raycaster.intersectObjects(machinesOnScene, true)
@@ -309,8 +322,8 @@ function onContextMenu(event) {
     
     if (intersects.length > 0) {
         console.log('this is for only the machines')
-        showContextMenu(event)
-
+        // showContextMenu(event)
+        contextMenu.show(event)
         // get the object's UUID
         let object = intersects[0].object;
         let hasReachedUUID = false;
@@ -323,19 +336,15 @@ function onContextMenu(event) {
                 object = object.parent;
             }
         }
+        
         let position = findPosition(selectedMachineUUID)
         let selectedMachine = factoryDisposition[position.i][position.j]
-
-        let selectedMachineType = selectedMachine.machineType
-        
-        setMachineType(selectedMachineType)
-        
-        selectedMachineType = selectMachineType()
+        factoryDisposition[position.i][position.j].machineType = contextMenu.currentSelectedMachineType()
 
         console.log(selectedMachine)
     }
     else {
-        hideContextMenu(event)
+        contextMenu.hide()
     }
     dragControls.enabled = false 
 }
