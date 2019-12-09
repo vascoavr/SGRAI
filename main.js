@@ -305,14 +305,18 @@ function onMouseMove(event) {
 }
 
 
-contextMenu.setRemoveFunction(() => {
-    console.log('when clicks on remove')
+contextMenu.setRemoveCallback(() => {
+    // console.log('when clicks on remove this function called')
+    let position = findPosition(selectedMachineUUID)
+    factoryDisposition[position.i][position.j].machineType = null
+    console.log('removed')
 })
 
-contextMenu.setSelectFunction(() => {
-    console.log('when selects machine type')
-    // for current selected:
-    // contextMenu.currentSelectedMachineType()
+contextMenu.setSelectCallback(() => {
+    // console.log('when selects machine type, this function called')
+    let position = findPosition(selectedMachineUUID)
+    factoryDisposition[position.i][position.j].machineType = contextMenu.currentSelectedMachineType()
+    console.log('changed to ' + contextMenu.currentSelectedMachineType())
 })
 
 function onContextMenu(event) {
@@ -321,13 +325,16 @@ function onContextMenu(event) {
     dragControls.enabled = false
     
     if (intersects.length > 0) {
-        console.log('this is for only the machines')
-        // showContextMenu(event)
+        // console.log('this is for only the machines')
+                
+        let position = findPosition(selectedMachineUUID)
+        contextMenu.defaultMachineType(factoryDisposition[position.i][position.j].machineType)
+        
         contextMenu.show(event)
+
         // get the object's UUID
         let object = intersects[0].object;
         let hasReachedUUID = false;
-
         while (!hasReachedUUID) {
             if (object.type === "Scene") {
                 hasReachedUUID = true;
@@ -336,17 +343,11 @@ function onContextMenu(event) {
                 object = object.parent;
             }
         }
-        
-        let position = findPosition(selectedMachineUUID)
-        let selectedMachine = factoryDisposition[position.i][position.j]
-        factoryDisposition[position.i][position.j].machineType = contextMenu.currentSelectedMachineType()
-
-        console.log(selectedMachine)
     }
     else {
         contextMenu.hide()
     }
-    dragControls.enabled = false 
+    dragControls.enabled = false
 }
 
 
