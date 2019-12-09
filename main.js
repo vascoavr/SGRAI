@@ -308,8 +308,7 @@ function onMouseMove(event) {
 contextMenu.setRemoveCallback(() => {
     // console.log('when clicks on remove this function called')
     let position = findPosition(selectedMachineUUID)
-    factoryDisposition[position.i][position.j].machineType = null
-    console.log('removed')
+    scene.remove(factoryDisposition[position.i][position.j])
 })
 
 contextMenu.setSelectCallback(() => {
