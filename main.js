@@ -1,6 +1,7 @@
 import { machines } from './models/machines/machines.js'
 import { setMachineProperties } from './models/machines/machines.js'
 import { ContextMenu } from './js/contextMenu.js'
+import { manufacturingPlan, drawCube } from './products.js'
 
 var gltfLoader = new THREE.GLTFLoader();
 
@@ -85,6 +86,9 @@ function init() {
 
     // loads the factory from the text file
     loadFactory();
+
+    // starts the production
+    startProduction();
 }
 
 function loadFactory() {
@@ -210,6 +214,10 @@ function drawMachine(machineType, lineNumber, machineNumber) {
                 // store the machine in the matrix
                 factoryDisposition[lineNumber][machineNumber] = machine;
 
+                if (machineNumber === 0) {
+                    drawTable2(machine);
+                }
+
                 // draw the tables connecting the machines
                 if (factoryDisposition[lineNumber][machineNumber - 1]) {
                     drawTable(factoryDisposition[lineNumber][machineNumber - 1], machine);
@@ -242,6 +250,17 @@ function drawTable(machine1, machine2) {
     tablesOnScene.push(table);
 }
 
+function drawTable2(machine) {
+    let cb = new ConveyorBelt();
+    let table = cb.drawBelt(machine.position, 48, THREE.Math.degToRad(180));
+
+    table.from = null;
+    table.to = machine;
+
+    scene.add(table);
+    tablesOnScene.push(table);
+}
+
 /* moves the table connecting 2 machines after dragging one of them */
 function moveTable(from, to) {
     let direction = from.position.clone().sub(to.position);
@@ -260,6 +279,16 @@ function moveTable(from, to) {
 
             break;
         }
+    }
+}
+
+function startProduction() {
+    // clones the manufacturing plan to a new array
+    let products = manufacturingPlan.slice(0);
+
+    // main loop that runs until all products are manufactured
+    while (products.length > 0) {
+        // when a product finishes its manufacturing, remove it from the array
     }
 }
 
