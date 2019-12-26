@@ -37,5 +37,7 @@ export function setMachineProperties(machine, x, z) {
             break;
     }
 
+    machine.isFree = true;
+
     return machine;
 }

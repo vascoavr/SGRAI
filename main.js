@@ -17,6 +17,7 @@ var factoryBuilding;
 var factoryDisposition = [];
 var machinesOnScene = [];
 var tablesOnScene = [];
+var productsOnScene = [];
 
 var selectedMachineUUID;
 
@@ -86,9 +87,6 @@ function init() {
 
     // loads the factory from the text file
     loadFactory();
-
-    // starts the production
-    startProduction();
 }
 
 function loadFactory() {
@@ -215,7 +213,7 @@ function drawMachine(machineType, lineNumber, machineNumber) {
                 factoryDisposition[lineNumber][machineNumber] = machine;
 
                 if (machineNumber === 0) {
-                    drawTable2(machine);
+                    drawTable2(lineNumber, machine);
                 }
 
                 // draw the tables connecting the machines
@@ -245,17 +243,19 @@ function drawTable(machine1, machine2) {
 
     table.from = machine1;
     table.to = machine2;
+    table.isFree = true;
 
     scene.add(table);
     tablesOnScene.push(table);
 }
 
-function drawTable2(machine) {
+function drawTable2(lineNumber, machine) {
     let cb = new ConveyorBelt();
     let table = cb.drawBelt(machine.position, 48, THREE.Math.degToRad(180));
 
-    table.from = null;
+    table.from = lineNumber;
     table.to = machine;
+    table.isFree = true;
 
     scene.add(table);
     tablesOnScene.push(table);
@@ -283,31 +283,93 @@ function moveTable(from, to) {
 }
 
 function startProduction() {
-    // clones the manufacturing plan to a new array
+    // clone the manufacturing plan to a new array
     let products = manufacturingPlan.slice(0);
 
     // main loop that runs until all products are manufactured
-    while (products.length > 0) {
-        // when a product finishes its manufacturing, remove it from the array
+    //while (products.length > 0) {
+        nextMove(products);
+    //}
+}
+
+/* determines which product should move next and moves it */
+function nextMove(products) {
+    for (let product of products) {
+        // the product isn't on the scene yet
+        if (!productsOnScene.includes(product.name)) {
+            let machineNumber = product.machines[0].number;
+            let machine = factoryDisposition[product.line-1][machineNumber-1];
+            let table = getConnectingTable(machine);
+            
+            // the table leading to the next machine is free
+            if (table.isFree) {
+                // place the product on the table
+                let cube = drawCube(product.name, table.position);
+                scene.add(cube);
+                productsOnScene.push(product.name);
+
+                // the next machine is free
+                if (machine.isFree) {
+                    // move the object to the next machine using Tween
+                    let tween = new TWEEN.Tween(cube.position)
+                        .to({x: machine.position.x, z: machine.position.z}, 1000)
+                        .start();
+
+                    // product reaches the machine
+                    tween.onComplete(function() {
+                        machine.isFree = false;
+
+                        // simulate the time needed to complete the operation
+                        setTimeout(function() {
+                            machine.isFree = true;
+                        }, product.machines[0].duration*1000);
+
+                        product.machines.shift();
+                    });
+                    
+                    break;
+                }
+            }
+        }
     }
+}
+
+/* given a machine's UUID, returns the table that connects another machine to it */ 
+function getConnectingTable(machine) {
+    for (let table of tablesOnScene) {
+        if (table.to.uuid === machine.uuid) {
+            return table;
+        }
+    }
+
+    return;
 }
 
 function animate() {
     requestAnimationFrame(animate);
+    TWEEN.update();
     renderer.render(scene, camera);
 }
 
 /*Widget*/
 function createGUI() {
-    var settings = {
-        'show walls': false
+    var Settings = function() {
+        this.showWalls = false,
+        this.start = function() {
+            startProduction();
+        }
     };
 
+    var settings = new Settings();
     var gui = new dat.GUI();
 
     var folder1 = gui.addFolder("Visibility");
-    folder1.add(settings, 'show walls').onChange(showWalls);
+    folder1.add(settings, 'showWalls').onChange(showWalls);
     folder1.open();
+
+    let folder2 = gui.addFolder("Controls");
+    folder2.add(settings, 'start');
+    folder2.open();
 }
 
 /*Show and hide walls*/

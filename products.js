@@ -85,12 +85,13 @@ export var manufacturingPlan = [
     }
 ]
 
-export function drawCube(position) {
-    let geometry = new THREE.BoxGeometry( 1, 1, 1 );
+export function drawCube(name, position) {
+    let geometry = new THREE.BoxGeometry( 10, 10, 10 );
     let material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
     let cube = new THREE.Mesh( geometry, material );
 
-    cube.position.copy(position);
+    cube.name = name;
+    cube.position.set(position.x-15, position.y+7, position.z);
     
     return cube;
 }
