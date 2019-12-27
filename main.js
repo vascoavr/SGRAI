@@ -19,6 +19,8 @@ var machinesOnScene = [];
 var tablesOnScene = [];
 var productsOnScene = [];
 
+var products = [];
+
 var selectedMachineUUID;
 
 window.addEventListener('resize', onWindowResize);
@@ -284,55 +286,80 @@ function moveTable(from, to) {
 
 function startProduction() {
     // clone the manufacturing plan to a new array
-    let products = manufacturingPlan.slice(0);
+    products = manufacturingPlan.slice(0);
 
     // main loop that runs until all products are manufactured
-    //while (products.length > 0) {
+    while (products.length > 0) {
         nextMove(products);
-    //}
+    }
 }
 
 /* determines which product should move next and moves it */
 function nextMove(products) {
     for (let product of products) {
+        // if the product has gone through all the machines in its manufacturing plan, remove it from the array
+        if (product.machines.length === 0) {
+            let index = products.indexOf(product);
+
+            if (index !== -1) {
+                products.splice(index, 1);
+                return;
+            }
+        }
+
+        let machineNumber = product.machines[0].number;
+        let machine = factoryDisposition[product.line-1][machineNumber-1];
+        let table = getConnectingTable(machine);
+
         // the product isn't on the scene yet
-        if (!productsOnScene.includes(product.name)) {
-            let machineNumber = product.machines[0].number;
-            let machine = factoryDisposition[product.line-1][machineNumber-1];
-            let table = getConnectingTable(machine);
-            
+        if (!productsOnScene.find(p => p.name === product.name)) {
             // the table leading to the next machine is free
             if (table.isFree) {
                 // place the product on the table
                 let cube = drawCube(product.name, table.position);
                 scene.add(cube);
-                productsOnScene.push(product.name);
+                productsOnScene.push(cube);
 
-                // the next machine is free
-                if (machine.isFree) {
-                    // move the object to the next machine using Tween
-                    let tween = new TWEEN.Tween(cube.position)
-                        .to({x: machine.position.x, z: machine.position.z}, 1000)
-                        .start();
+                table.isFree = false;
+            }
+        // the product is already on the scene
+        } else {
+            let cube = productsOnScene.find(p => p.name === product.name);
 
-                    // product reaches the machine
-                    tween.onComplete(function() {
-                        machine.isFree = false;
+            // move the product from the table to the machine
+            if (machine.isFree) {
+                let tween = new TWEEN.Tween(cube.position)
+                    .to({x: machine.position.x, z: machine.position.z}, 1000)
+                    .start();
 
-                        // simulate the time needed to complete the operation
-                        setTimeout(function() {
-                            machine.isFree = true;
-                        }, product.machines[0].duration*1000);
+                // product reaches the machine
+                //tween.onComplete(function() {
+                    //let duration = product.machines[0].duration*1000;
 
-                        product.machines.shift();
-                    });
+                    table.isFree = true;
+                    machine.isFree = false;
+
+                    // simulate the time needed to complete the operation
+                    //simulateWorkingTime(machine, duration);
                     
-                    break;
-                }
+                    product.machines.shift();
+                    machine.isFree = true;
+                //});
+            }
+
+            // move the product from the machine to the table
+            if (table.isFree) {
+                let tween = new TWEEN.Tween(cube.position)
+                    .to({x: table.position.x, z: table.position.z}, 1000)
+                    .start();
+
+                tween.onComplete(function() {
+                    table.isFree = false;
+                });
             }
         }
     }
-}
+}  
 
 /* given a machine's UUID, returns the table that connects another machine to it */ 
 function getConnectingTable(machine) {
@@ -343,6 +370,12 @@ function getConnectingTable(machine) {
     }
 
     return;
+}
+
+function simulateWorkingTime(machine, duration) {
+    setTimeout(function() {
+        machine.isFree = true;
+    }, duration);
 }
 
 function animate() {
