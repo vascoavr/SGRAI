@@ -22,11 +22,13 @@ var productsOnScene = [];
 var products = [];
 
 var selectedMachineUUID;
+var selectedMachine;
 
 window.addEventListener('resize', onWindowResize);
 window.addEventListener('mousemove', onMouseMove, false);
 document.addEventListener('contextmenu', onContextMenu, false);
 //document.addEventListener("keydown", onDocumentKeyDown, false);
+//document.addEventListener('mousedown', onDocumentMouseDown, false);
 
 init();
 animate();
@@ -128,22 +130,47 @@ function loadFactory() {
                 event.object.getWorldPosition(newPosition);
                 newPosition.y = 0;
 
-                // update the machine's position in the matrix
-                factoryDisposition[indices.i][indices.j].position.copy(newPosition);
-                factoryDisposition[indices.i][indices.j].traverse(function (node) {
-                    if (node instanceof THREE.Mesh) {
-                        node.position.set(0, 0, 0);
+                // if the position changed
+                if (factoryDisposition[indices.i][indices.j].position.x !== newPosition.x || 
+                    factoryDisposition[indices.i][indices.j].position.z !== newPosition.z) {
+                    // update the machine's position in the matrix
+                    factoryDisposition[indices.i][indices.j].position.copy(newPosition);
+                    factoryDisposition[indices.i][indices.j].traverse(function (node) {
+                        if (node instanceof THREE.Mesh) {
+                            node.position.set(0, 0, 0);
+                        }
+                    });
+
+                    let previousMachine = factoryDisposition[indices.i][indices.j-1];
+                    let nextMachine = factoryDisposition[indices.i][indices.j+1];
+                    let j = indices.j-1;
+
+                    while (previousMachine === 0 && j > 0) {
+                        j -= 1;
+                        previousMachine = factoryDisposition[indices.i][j];
+                    } 
+
+                    j = indices.j+1;
+
+                    while (nextMachine === 0 && j < factoryDisposition[indices.i].length) {
+                        j += 1;
+                        nextMachine = factoryDisposition[indices.i][j];
                     }
-                });
 
-                // dragged machine has another machine connected to it ([i][j-1])
-                if (factoryDisposition[indices.i][indices.j - 1]) {
-                    moveTable(factoryDisposition[indices.i][indices.j - 1], factoryDisposition[indices.i][indices.j]);
-                }
+                    // dragged machine has another machine connected to it ([i][j-1])
+                    if (previousMachine) {
+                        moveTable(previousMachine, factoryDisposition[indices.i][indices.j]);
+                    }
 
-                // dragged machine connects to another machine ([i][j+1])
-                if (factoryDisposition[indices.i][indices.j + 1]) {
-                    moveTable(factoryDisposition[indices.i][indices.j], factoryDisposition[indices.i][indices.j + 1]);
+                    // dragged machine connects to another machine ([i][j+1])
+                    if (nextMachine) {
+                        moveTable(factoryDisposition[indices.i][indices.j], nextMachine);
+                    }
+
+                    // first machine of the line
+                    if (!previousMachine) {
+                        moveTable(getConnectingTable(factoryDisposition[indices.i][indices.j]), factoryDisposition[indices.i][indices.j]);
+                    }
                 }
 
                 orbitControls.enabled = true;
@@ -267,21 +294,28 @@ function drawTable2(lineNumber, machine) {
 function moveTable(from, to) {
     let direction = from.position.clone().sub(to.position);
     let length = direction.length();
-    let scale = length / 26;
+    let scale = length / 24;
 
     // determine the rotation angle
     let angle = Math.atan2(direction.z, direction.x);
 
-    // update the table's position, rotation and scale
-    for (let table of tablesOnScene) {
-        if (table.from.uuid === from.uuid && table.to.uuid === to.uuid) {
-            table.position.set(to.position.x - (scale / 10), 11, to.position.z);
-            table.rotation.set(0, THREE.Math.degToRad(180) - angle, 0);
-            table.scale.set(scale, 1, 1);
-
-            break;
+    let table;
+    
+    // check if the table is the start of a production line
+    if (!Number.isInteger(from.from)) {
+        for (table of tablesOnScene) {
+            if (table.from.uuid === from.uuid && table.to.uuid === to.uuid) {
+                break;
+            }
         }
+    } else {
+        table = from;
     }
+    
+    // update the table's position, rotation and scale
+    table.position.set(to.position.x-10, 11, to.position.z);
+    table.rotation.set(0, THREE.Math.degToRad(180) - angle, 0);
+    table.scale.set(scale, 1, 1);
 }
 
 function startProduction() {
@@ -372,6 +406,17 @@ function getConnectingTable(machine) {
     return;
 }
 
+/* given a machine's UUID, returns the table that connects it to another machine*/ 
+function getNextTable(machine) {
+    for (let table of tablesOnScene) {
+        if (table.from.uuid === machine.uuid) {
+            return table;
+        }
+    }
+
+    return;
+}
+
 function simulateWorkingTime(machine, duration) {
     setTimeout(function() {
         machine.isFree = true;
@@ -432,7 +477,47 @@ function onMouseMove(event) {
 contextMenu.setRemoveCallback(() => {
     // console.log('when clicks on remove this function called')
     let position = findPosition(selectedMachineUUID)
-    scene.remove(factoryDisposition[position.i][position.j])
+    let machine = factoryDisposition[position.i][position.j];
+    scene.remove(machine)
+
+    machinesOnScene = machinesOnScene.filter(function(m) {
+        return m.uuid !== machine.uuid;
+    });
+
+    factoryDisposition[position.i][position.j] = 0;
+
+    let table1 = getConnectingTable(machine);
+    let table2 = getNextTable(machine);
+    scene.remove(table1);
+    scene.remove(table2);
+
+    tablesOnScene = tablesOnScene.filter(function(t) {
+        return t.from !== table1.from && t.to !== table1.to;
+    });
+
+    tablesOnScene = tablesOnScene.filter(function(t) {
+        return t.from !== table2.from && t.to !== table2.to;
+    });
+
+    let previousMachine = factoryDisposition[position.i][position.j-1];
+    let nextMachine = factoryDisposition[position.i][position.j+1];
+    let j = position.j-1;
+
+    while (previousMachine === 0 && j > 0) {
+        j -= 1;
+        previousMachine = factoryDisposition[position.i][j];
+    } 
+
+    j = position.j+1;
+
+    while (nextMachine === 0 && j < factoryDisposition[position.i].length) {
+        j += 1;
+        nextMachine = factoryDisposition[position.i][j];
+    }
+
+    if (previousMachine && nextMachine) {
+        drawTable(previousMachine, nextMachine);
+    }
 })
 
 contextMenu.setSelectCallback(() => {
@@ -470,9 +555,8 @@ function onContextMenu(event) {
     else {
         contextMenu.hide()
     }
-    dragControls.enabled = false
+    dragControls.enabled = true;
 }
-
 
 function onDocumentKeyDown(event) {
     let keyCode = event.which;
@@ -545,6 +629,53 @@ function onDocumentKeyDown(event) {
                 }
             }
         }
+    }
+}
+
+function onDocumentMouseDown(event) {
+    // mouse position
+    let mouse = new THREE.Vector3((event.clientX / window.innerWidth) * 2 - 1,
+                                -( event.clientY / window.innerHeight ) * 2 + 1,
+                                0.5);
+    let raycaster =  new THREE.Raycaster();                                        
+    raycaster.setFromCamera(mouse, camera);
+    
+    // create an array containing all machines in the scene with which the ray intersects
+    let intersects = raycaster.intersectObjects(machinesOnScene, true);
+
+    // if there is one (or more) intersections
+    if (intersects.length > 0) {
+        let selectedObject = intersects[0].object;
+        let object = selectedObject;
+
+        // get the object's UUID
+        let hasReachedUUID = false;
+        while (!hasReachedUUID) {
+            if (object.type === "Scene") {
+                hasReachedUUID = true;
+                selectedMachineUUID = object.uuid;
+            } else {
+                object = object.parent;
+            }
+        }
+
+        let material = intersects[0].object.material.clone();
+
+        // if there's another machine selected, remove its highlight
+        if (selectedMachine && selectedObject !== selectedMachine) {
+            selectedMachine.material.emissive.setHex(0);
+            selectedMachine = 0;
+        }
+
+        // highlights the selected machine
+        if (material.emissive.getHex() === 0) {
+            material.emissive.setHex(0xff0000);
+            selectedMachine = intersects[0].object;
+        } else {
+            material.emissive.setHex(0);
+        }
+
+        intersects[0].object.material = material;
     }
 }
 

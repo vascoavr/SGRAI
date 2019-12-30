@@ -157,6 +157,10 @@ function ConveyorBelt(){
     this.drawBelt = function(position, length, angle) {
         let belt = this.draw();
         let scale = length / 32;
+
+        if (scale > 1.5) {
+            scale *= 1.25;
+        }
         
         belt.position.set(position.x-10, 11, position.z);
         belt.rotation.set(0, THREE.Math.degToRad(180) - angle, 0);
