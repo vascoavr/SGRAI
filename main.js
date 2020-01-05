@@ -522,8 +522,26 @@ contextMenu.setRemoveCallback(() => {
 
 contextMenu.setSelectCallback(() => {
     // console.log('when selects machine type, this function called')
-    let position = findPosition(selectedMachineUUID)
-    factoryDisposition[position.i][position.j].machineType = contextMenu.currentSelectedMachineType()
+    let { i, j } = findPosition(selectedMachineUUID)
+    let machine = factoryDisposition[i][j]
+
+    const basePath = machines.find(m => m.type === contextMenu.currentSelectedMachineType()).model
+    var loader = new THREE.TextureLoader()
+
+    loader.load(basePath + '/textures/Material_baseColor.png', (updatedTexture) => {
+        updatedTexture.encoding = THREE.sRGBEncoding
+        updatedTexture.flipY = false
+  
+        machine.traverse((mesh) => {
+            if (mesh instanceof THREE.Mesh) {
+                mesh.material.map = updatedTexture
+                mesh.material.needsUpdate = true
+            }
+        })
+    })
+
+    factoryDisposition[i][j].machineType = contextMenu.currentSelectedMachineType()
+    // replaceMachine(contextMenu.currentSelectedMachineType(), i, j, pos)
     console.log('changed to ' + contextMenu.currentSelectedMachineType())
 })
 
@@ -536,6 +554,7 @@ function onContextMenu(event) {
         // console.log('this is for only the machines')
                 
         let position = findPosition(selectedMachineUUID)
+        // console.log(factoryDisposition[position.i][position.j])
         contextMenu.defaultMachineType(factoryDisposition[position.i][position.j].machineType)
         
         contextMenu.show(event)
