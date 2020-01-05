@@ -57,7 +57,6 @@ export class ContextMenu {
     show = (e) => {
         e.preventDefault()
         if (!this.isOpened) {
-            console.log(this)
             this.menu.style.top = `${e.clientY}px`
             this.menu.style.left = `${e.clientX}px`
             this.menu.style.display = "block"
